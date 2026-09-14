@@ -91,7 +91,12 @@ def pack_cmd(args: list[str]) -> int:
             subprocess.run(["git", "init", "-q", str(d)], check=False)
             # Start clean: sync only commits adoptions into a pack with no uncommitted changes.
             subprocess.run(["git", "-C", str(d), "add", "-A"], check=False)
-            subprocess.run(["git", "-C", str(d), "commit", "-q", "-m", "chore: initialise harnessd brain pack"], check=False)
+            first = subprocess.run(["git", "-C", str(d), "commit", "-q", "-m", "chore: initialise harnessd brain pack"],
+                                   capture_output=True, text=True)
+            if first.returncode != 0:
+                # Usually no git identity. Left uncommitted, sync would treat the pack as dirty and never commit adoptions.
+                print("  warn: could not make the pack's first commit - set git user.name and user.email, then run:\n"
+                      f"        git -C \"{d}\" commit -m \"chore: initialise harnessd brain pack\"")
     elif not d.exists():
         print(f"{d} does not exist")
         return 1
