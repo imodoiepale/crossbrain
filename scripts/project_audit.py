@@ -264,7 +264,7 @@ def audit(repo: Path, patterns, history: bool = True) -> Report:
     if not ci and rep.facts["commits"] >= 10:
         add(Finding("no-ci", "low", "9 hollow checks", "No GitHub Actions workflow", []))
     if not (repo / ".git" / "hooks" / "pre-commit").exists():
-        add(Finding("no-precommit-gate", "low", "1 secrets", "No pre-commit hook - run `harnessd hooks install`", []))
+        add(Finding("no-precommit-gate", "low", "1 secrets", "No pre-commit hook - run `crossbrain hooks install`", []))
     return rep
 
 

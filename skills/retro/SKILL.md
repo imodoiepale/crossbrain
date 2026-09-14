@@ -33,7 +33,7 @@ if both exist. Mirror the class into `<pack>/skills/repo-<name>/SKILL.md`.
 ## Destination 2 — the lessons skill (in your pack)
 
 When the same class has now shipped in **a second repo**, promote it to the cross-repo lessons skill,
-with evidence from both repos. Then run `harnessd brain`.
+with evidence from both repos. Then run `crossbrain brain`.
 
 ## Destination 3 — memory
 

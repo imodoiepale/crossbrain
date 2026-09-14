@@ -58,7 +58,7 @@ HIDDEN = re.compile("[​-‏‪-‮⁠-⁤﻿]")
 TEXT = {".md", ".json", ".txt", ".yaml", ".yml", ".js", ".mjs", ".cjs", ".ts", ".tsx", ".py", ".sh", ".ps1",
         ".toml", ".lua", ".setting", ".html", ".css"}
 MAX_BYTES = 5_000_000
-NOTE = ("> Vendored from [ECC]({url}) @ `{sha}` (MIT). Your harnessd and brain-pack skills take "
+NOTE = ("> Vendored from [ECC]({url}) @ `{sha}` (MIT). Your crossbrain and brain-pack skills take "
         "precedence where they conflict. Catalogue: `capabilities`. Refresh: `python scripts/vendor_ecc.py`.\n\n")
 
 

@@ -6,7 +6,7 @@ tools: Read, Grep, Glob, Bash
 ---
 
 
-> Vendored from [ECC](https://github.com/affaan-m/ecc) @ `8321021` (MIT). Your harnessd and brain-pack skills take precedence where they conflict. Catalogue: `capabilities`. Refresh: `python scripts/vendor_ecc.py`.
+> Vendored from [ECC](https://github.com/affaan-m/ecc) @ `8321021` (MIT). Your crossbrain and brain-pack skills take precedence where they conflict. Catalogue: `capabilities`. Refresh: `python scripts/vendor_ecc.py`.
 
 ## Prompt Defense Baseline
 

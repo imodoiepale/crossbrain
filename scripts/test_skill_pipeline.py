@@ -43,9 +43,9 @@ class AdoptTest(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         t = Path(self.tmp.name)
-        # Never read this machine's real ~/.harnessd/config.json. A real brain pack that happens to hold a
+        # Never read this machine's real ~/.crossbrain/config.json. A real brain pack that happens to hold a
         # skill named like a fixture ("diagrammer") made adoption skip it, the tests failed, and sync then
-        # refused to install - on exactly the machines that use harnessd the most.
+        # refused to install - on exactly the machines that use crossbrain the most.
         patcher = mock.patch.object(hc, "CONFIG", t / "no-config.json")
         patcher.start()
         self.addCleanup(patcher.stop)

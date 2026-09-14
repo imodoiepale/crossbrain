@@ -1,17 +1,17 @@
 """
-Install harnessd into every agent CLI on this machine.
+Install crossbrain into every agent CLI on this machine.
 
-    python harnessd.py install                    # skills + agents + instruction blocks + Claude hook
-    python harnessd.py install --dry-run
-    python harnessd.py hooks install [--all]      # the preflight gate as a git pre-commit hook
+    python crossbrain.py install                    # skills + agents + instruction blocks + Claude hook
+    python crossbrain.py install --dry-run
+    python crossbrain.py hooks install [--all]      # the preflight gate as a git pre-commit hook
 
-What goes where (targets come from ~/.harnessd/config.json - see hconfig.py):
+What goes where (targets come from ~/.crossbrain/config.json - see hconfig.py):
   skills        engine skills + every pack's skills -> each skill target (~/.claude/skills, ~/.agents/skills, ...)
   agents        engine + pack agents/*.md           -> ~/.claude/agents (Claude Code subagents)
   instructions  a marked block in ~/.claude/CLAUDE.md, ~/.codex/AGENTS.md, ~/.gemini/GEMINI.md, ...
   hook          SessionStart brain card for Claude Code
 
-Only things harnessd installed are ever replaced or removed (per-target manifest). A skill's own
+Only things crossbrain installed are ever replaced or removed (per-target manifest). A skill's own
 node_modules survives reinstalls, because adopted skills are stored without dependencies.
 """
 
@@ -25,19 +25,19 @@ from pathlib import Path
 
 import hconfig as hc
 
-MANIFEST = ".harnessd-manifest.json"
-BLOCK_BEGIN, BLOCK_END = "<!-- harnessd:begin -->", "<!-- harnessd:end -->"
+MANIFEST = ".crossbrain-manifest.json"
+BLOCK_BEGIN, BLOCK_END = "<!-- crossbrain:begin -->", "<!-- crossbrain:end -->"
 IGNORE = shutil.ignore_patterns("node_modules", ".git", "__pycache__", ".venv")
 
 INSTRUCTIONS = """{begin}
-## harnessd
+## crossbrain
 
-Skills from harnessd are installed. Before any coding task:
+Skills from crossbrain are installed. Before any coding task:
 
 1. `brain`: identify the project and load its `repo-*` skill if one exists.
 2. `capabilities`: the index of everything available (skills, the full ECC library, commands, rule packs). Read a matching skill before writing something from scratch.
 3. `project-intake`: for any unfamiliar, inherited or client project, or any "audit / is this safe / what's the architecture" request.
-4. Never paste or echo a secret. Commit through the preflight gate (`harnessd preflight --staged`).
+4. Never paste or echo a secret. Commit through the preflight gate (`crossbrain preflight --staged`).
 {end}
 """
 
@@ -59,7 +59,7 @@ def collect(roots: list[Path], pattern: str) -> dict[str, Path]:
 def copy_skill(src: Path, dest: Path) -> None:
     parked = None
     if (dest / "node_modules").exists():
-        parked = dest.parent / f".harnessd-nm-{dest.name}"
+        parked = dest.parent / f".crossbrain-nm-{dest.name}"
         if parked.exists():
             shutil.rmtree(parked)
         (dest / "node_modules").rename(parked)
@@ -147,7 +147,7 @@ def install(cfg: dict | None = None, dry_run: bool = False, log=print) -> dict:
 # ---------------------------------------------------------------- git pre-commit hooks
 
 HOOK = """#!/bin/sh
-# harnessd preflight gate (installed by `harnessd hooks install`)
+# crossbrain preflight gate (installed by `crossbrain hooks install`)
 PY=$(command -v python3 || command -v python)
 "$PY" "{script}" --staged . || exit 1
 """
@@ -157,8 +157,8 @@ def install_git_hook(repo: Path, uninstall: bool = False) -> str:
     hooks = repo / ".git" / "hooks"
     if not hooks.exists():
         return "not a git repo"
-    hook, backup = hooks / "pre-commit", hooks / "pre-commit.harnessd-backup"
-    ours = hook.exists() and "harnessd preflight gate" in hook.read_text(encoding="utf-8", errors="replace")
+    hook, backup = hooks / "pre-commit", hooks / "pre-commit.crossbrain-backup"
+    ours = hook.exists() and "crossbrain preflight gate" in hook.read_text(encoding="utf-8", errors="replace")
     if uninstall:
         if not ours:
             return "not installed"
@@ -172,4 +172,4 @@ def install_git_hook(repo: Path, uninstall: bool = False) -> str:
         hook.rename(backup)
     hook.write_text(HOOK.format(script=(hc.ENGINE / "scripts" / "preflight.py").as_posix()), encoding="utf-8", newline="\n")
     hook.chmod(0o755)
-    return "installed" + (" (previous hook kept as pre-commit.harnessd-backup)" if backup.exists() else "")
+    return "installed" + (" (previous hook kept as pre-commit.crossbrain-backup)" if backup.exists() else "")

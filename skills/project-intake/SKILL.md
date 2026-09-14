@@ -1,6 +1,6 @@
 ---
 name: project-intake
-description: The fixed procedure for taking on ANY project - a new client repo, an inherited codebase, a repo untouched for months, or "audit this / review this / is this safe / what's the architecture / what breaks in prod". Runs identify, evidence scan, architecture map, security audit, defect-class sweep, production readiness, report, then routes the lessons, using `harnessd intake-scan` for evidence and the vendored ECC security, architecture, database and production-audit skills and agents for judgement. Use before the first change to any unfamiliar project, and before launch or handover of a familiar one.
+description: The fixed procedure for taking on ANY project - a new client repo, an inherited codebase, a repo untouched for months, or "audit this / review this / is this safe / what's the architecture / what breaks in prod". Runs identify, evidence scan, architecture map, security audit, defect-class sweep, production readiness, report, then routes the lessons, using `crossbrain intake-scan` for evidence and the vendored ECC security, architecture, database and production-audit skills and agents for judgement. Use before the first change to any unfamiliar project, and before launch or handover of a familiar one.
 ---
 
 # Project intake
@@ -21,7 +21,7 @@ from it.
 ## Phase 1 — Evidence scan (automated, read-only)
 
 ```bash
-harnessd intake-scan R > R/docs/intake/AUDIT.md
+crossbrain intake-scan R > R/docs/intake/AUDIT.md
 ```
 
 The scan never prints secret values. It checks:
@@ -91,7 +91,7 @@ Write `R/docs/intake/YYYY-MM-DD-INTAKE.md`:
 ```
 
 Then route what you learned, with `retro`:
-- **New repo:** write `<pack>/skills/repo-<name>/SKILL.md`, then run `harnessd brain`.
+- **New repo:** write `<pack>/skills/repo-<name>/SKILL.md`, then run `crossbrain brain`.
 - **A class now seen in a second repo:** promote it to your lessons skill.
 - **Something the scanner could have proven but missed:** add a check and a fixture to `scripts/test_project_audit.py`, and contribute it upstream.
 

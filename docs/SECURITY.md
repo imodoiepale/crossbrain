@@ -1,22 +1,22 @@
 # Security model
 
-harnessd puts third-party instructions (skills) in front of agents that can run commands on your machine.
+crossbrain puts third-party instructions (skills) in front of agents that can run commands on your machine.
 That is a supply chain, and it's treated like one.
 
-## What harnessd does
+## What crossbrain does
 
 | Control | Where | What it stops |
 |---|---|---|
-| **Commit gate** | `scripts/preflight.py`, and a git pre-commit hook via `harnessd hooks install` | Secrets, `.env` files, blobs over 5 MB, and commits to protected branches. Findings show `file:line` plus an 8-character prefix, never the value. |
+| **Commit gate** | `scripts/preflight.py`, and a git pre-commit hook via `crossbrain hooks install` | Secrets, `.env` files, blobs over 5 MB, and commits to protected branches. Findings show `file:line` plus an 8-character prefix, never the value. |
 | **One pattern set** | `scripts/secret-patterns.txt` | The gate, the redactor, the audit scanner and the supply-chain scans all use the same list, so they cannot drift apart. The patterns are regression-tested against real leak shapes and against real strings that must not match. |
 | **Supply-chain scan on vendoring** | `scripts/vendor_ecc.py` | ECC is copied to a staging folder and scanned for secret patterns, hidden or bidi Unicode (a prompt-injection carrier) and oversized files **before** it touches the repo. Any hit aborts the whole update. |
-| **Pinned third-party content** | `vendor/ecc/ORIGIN.json` | Upstream changes are *reported* by `harnessd drift` and never pulled in automatically. A new pin means reviewing a diff. |
+| **Pinned third-party content** | `vendor/ecc/ORIGIN.json` | Upstream changes are *reported* by `crossbrain drift` and never pulled in automatically. A new pin means reviewing a diff. |
 | **Adoption quarantine** | `scripts/adopt_skills.py` | A skill you add by hand is shared with your other machines only if it passes the same scan. A skill that fails stays local and is reported. Dependency folders are never copied. |
 | **Sync refuses broken checkouts** | `scripts/sync.py` | If the engine's own tests fail after a pull, nothing is installed. |
 | **Secret redaction for memory services** | `scripts/memory_redact_shim.py` | An optional localhost proxy for agent memory services that capture from the request path. It redacts request bodies before capture, streams responses, and binds only to loopback. |
-| **Read-only audit** | `harnessd intake-scan` | It finds tracked secrets, secrets in git history, client-bundle keys, RLS and `SECURITY DEFINER` gaps and unverified JWTs, without ever printing a value. |
+| **Read-only audit** | `crossbrain intake-scan` | It finds tracked secrets, secrets in git history, client-bundle keys, RLS and `SECURITY DEFINER` gaps and unverified JWTs, without ever printing a value. |
 
-## What harnessd deliberately does not do
+## What crossbrain deliberately does not do
 
 - **Capture transcripts.** Knowledge moves between machines only through git commits you can review. Nothing is
   synced from session transcripts, so a key you pasted into a session doesn't spread.

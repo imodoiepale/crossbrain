@@ -1,9 +1,9 @@
 <p align="center">
-  <img src="assets/banner.svg" alt="harnessd — one brain for every coding agent" width="100%">
+  <img src="assets/banner.svg" alt="crossbrain — one brain for every coding agent" width="100%">
 </p>
 
 <p align="center">
-  <a href="https://github.com/imodoiepale/harnessd/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/imodoiepale/harnessd/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://github.com/imodoiepale/crossbrain/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/imodoiepale/crossbrain/actions/workflows/ci.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-22c55e.svg"></a>
   <img alt="Python 3.9+" src="https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white">
   <img alt="Platforms" src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-64748b">
@@ -26,7 +26,7 @@
 </p>
 
 <p align="center">
-  <b>Your coding agents forget everything between sessions. harnessd gives them one shared, growing brain</b><br>
+  <b>Your coding agents forget everything between sessions. crossbrain gives them one shared, growing brain</b><br>
   skills learned from your own git history · security gates at the end of the pipeline · a fixed procedure for any project ·<br>
   the entire <a href="https://github.com/affaan-m/ecc">ECC</a> library on demand · identical on every machine, in every agent CLI.
 </p>
@@ -38,17 +38,17 @@
 **macOS · Linux · WSL**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/imodoiepale/harnessd/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/imodoiepale/crossbrain/main/install.sh | bash
 ```
 
 **Windows (PowerShell)**
 
 ```powershell
-irm https://raw.githubusercontent.com/imodoiepale/harnessd/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/imodoiepale/crossbrain/main/install.ps1 | iex
 ```
 
-It clones the engine to `~/.harnessd/engine`, adds a `harnessd` command, installs skills into every agent CLI it finds, and runs
-`harnessd doctor`. Re-run it to update. It needs `git` and Python 3.9+, and it never asks for or stores a credential.
+It clones the engine to `~/.crossbrain/engine`, adds a `crossbrain` command, installs skills into every agent CLI it finds, and runs
+`crossbrain doctor`. Re-run it to update. It needs `git` and Python 3.9+, and it never asks for or stores a credential.
 [Read install.sh](install.sh) before piping it to a shell, since it's short.
 
 ---
@@ -80,7 +80,7 @@ Throughput is rarely the problem with AI coding agents. **Memory and the end of 
 - **Every tool has its own silo.** Claude Code, Codex, Cursor, Gemini CLI, OpenCode and Kimi Code each keep separate rules and skills.
 - **Every machine drifts.** Your laptop's agent knows things your desktop's doesn't.
 
-harnessd fixes this with plain files and git. There's no server, database, or cloud account, and nothing captures your transcripts.
+crossbrain fixes this with plain files and git. There's no server, database, or cloud account, and nothing captures your transcripts.
 
 ---
 
@@ -89,7 +89,7 @@ harnessd fixes this with plain files and git. There's no server, database, or cl
 | | Capability | What it means for you |
 |---|---|---|
 | 🧠 | **Brain** | Opening an agent in a repo automatically surfaces that repo's stack, verify commands, and *the bugs it already shipped*. |
-| 📚 | **History → skills** | `harnessd mine` turns every repo's git history into redacted digests, and `history-to-skills` distils one skill per repo with commit-cited defect classes. |
+| 📚 | **History → skills** | `crossbrain mine` turns every repo's git history into redacted digests, and `history-to-skills` distils one skill per repo with commit-cited defect classes. |
 | 🗂️ | **Capabilities** | One generated, self-updating index of *everything* an agent can use: your skills, plugin skills, and the full ECC library. |
 | 🛡️ | **Preflight gate** | Blocks secrets, `.env` files, blobs over 5 MB, and protected-branch commits. It runs as a pre-commit hook in every repo, and it's regression-tested against real leaks *and* real false positives. |
 | 🔍 | **Project intake** | A fixed sequence for any unfamiliar project: evidence scan, architecture map, security audit, defect-class sweep, production readiness, and a report. |
@@ -104,7 +104,7 @@ harnessd fixes this with plain files and git. There's no server, database, or cl
 
 ```mermaid
 flowchart LR
-  subgraph ENGINE["harnessd engine · public"]
+  subgraph ENGINE["crossbrain engine · public"]
     direction TB
     S1["core skills<br/>brain · capabilities · project-intake<br/>ship · retro · history-to-skills"]
     S2["ECC library<br/>292 skills · 68 agents<br/>94 commands · 22 rule packs"]
@@ -119,7 +119,7 @@ flowchart LR
     P4["brain map"]
   end
 
-  ENGINE --> I{{"harnessd install / sync"}}
+  ENGINE --> I{{"crossbrain install / sync"}}
   PACK --> I
 
   I --> C1["~/.claude/skills"]
@@ -184,7 +184,7 @@ flowchart TB
   CAP[["capabilities<br/>generated index"]] --> LOADED
   CAP --> LIBRARY
   LIBRARY -- "agent reads the file on demand" --> AG((agent))
-  LIBRARY -- "harnessd ecc use NAME" --> L3
+  LIBRARY -- "crossbrain ecc use NAME" --> L3
 ```
 
 Every installed skill's description is loaded at the start of **every** session. Loading all of ECC would add 15–20k tokens
@@ -214,35 +214,35 @@ it would hide your `CLAUDE.md` from OpenCode.
 
 ```mermaid
 flowchart LR
-  A["1 · install<br/>one-line installer"] --> B["2 · brain pack<br/>harnessd pack init"]
-  B --> C["3 · learn<br/>harnessd mine<br/>+ history-to-skills"]
-  C --> D["4 · sync everywhere<br/>harnessd schedule on"]
+  A["1 · install<br/>one-line installer"] --> B["2 · brain pack<br/>crossbrain pack init"]
+  B --> C["3 · learn<br/>crossbrain mine<br/>+ history-to-skills"]
+  C --> D["4 · sync everywhere<br/>crossbrain schedule on"]
   D --> E["5 · use it<br/>open any agent in any repo"]
 ```
 
 ```bash
 # 1. install (see above), then check what was detected
-harnessd doctor
+crossbrain doctor
 
 # 2. create your private brain pack and push it to a PRIVATE remote
-harnessd pack init ~/my-brain
+crossbrain pack init ~/my-brain
 cd ~/my-brain && git remote add origin git@github.com:you/my-brain.git
 
 # 3. teach it your history (point projects_root at the folder holding your repos)
-harnessd config projects_root ~/code
-harnessd mine --out ~/harnessd-digests
-#    then in your agent: "use the history-to-skills skill on ~/harnessd-digests"
-harnessd brain
+crossbrain config projects_root ~/code
+crossbrain mine --out ~/crossbrain-digests
+#    then in your agent: "use the history-to-skills skill on ~/crossbrain-digests"
+crossbrain brain
 
 # 4. install everywhere, now and every day
-harnessd sync
-harnessd schedule on
+crossbrain sync
+crossbrain schedule on
 
 # 5. gate every repo
-harnessd hooks install --all
+crossbrain hooks install --all
 ```
 
-On a second machine, install harnessd, then run `harnessd pack add ~/my-brain` after cloning your pack, and `harnessd sync`. That's it.
+On a second machine, install crossbrain, then run `crossbrain pack add ~/my-brain` after cloning your pack, and `crossbrain sync`. That's it.
 
 ---
 
@@ -253,7 +253,7 @@ On a second machine, install harnessd, then run `harnessd pack add ~/my-brain` a
 | **`brain`** | Starting any task. It routes to the repo skill, capabilities, intake, ship and retro. |
 | **`capabilities`** | "Is there a skill for X?" It covers everything available, including the full ECC library. It's generated and never hand-edited. |
 | **`project-intake`** | Taking on any unfamiliar, inherited or client project, or "is this safe / what's the architecture". |
-| **`history-to-skills`** | Setting up, adding a repo, or when `harnessd drift` shows fixes newer than a skill. |
+| **`history-to-skills`** | Setting up, adding a repo, or when `crossbrain drift` shows fixes newer than a skill. |
 | **`ship`** | Committing, pushing, PRs, releases. It covers branch lanes, preflight, why-not-what commits and honest PRs. |
 | **`retro`** | Ending a task. It routes the lesson to the one place the next session will read. |
 | **`ecc-*`** (active set) | Security review, production audit, codebase onboarding, ADRs, migrations, Postgres, deployment, verification, Next.js, hexagonal architecture. |
@@ -262,10 +262,10 @@ Five ECC reviewer agents install as Claude Code subagents: `ecc-security-reviewe
 `ecc-architect`, `ecc-database-reviewer` and `ecc-code-reviewer`.
 
 ```bash
-harnessd ecc search stripe webhook     # find anything in the library
-harnessd ecc show tdd-workflow         # read it
-harnessd ecc use tdd-workflow          # make it always-loaded (on every machine after sync)
-harnessd ecc drop nextjs-turbopack
+crossbrain ecc search stripe webhook     # find anything in the library
+crossbrain ecc show tdd-workflow         # read it
+crossbrain ecc use tdd-workflow          # make it always-loaded (on every machine after sync)
+crossbrain ecc drop nextjs-turbopack
 ```
 
 ---
@@ -274,7 +274,7 @@ harnessd ecc drop nextjs-turbopack
 
 ```mermaid
 flowchart TD
-  P0["0 · Identify<br/>load repo-* skill · define done"] --> P1["1 · Evidence scan<br/>harnessd intake-scan"]
+  P0["0 · Identify<br/>load repo-* skill · define done"] --> P1["1 · Evidence scan<br/>crossbrain intake-scan"]
   P1 --> STOP{"critical finding?<br/>live secret · key in client bundle"}
   STOP -- yes --> U["⛔ tell the user first<br/>rotation steps on top"]
   STOP -- no --> P2
@@ -296,8 +296,8 @@ The scanner is deterministic and read-only, and it never prints a secret value:
 | **Hygiene** | personal-data files · files over 5 MB · tracked `node_modules` · copy files · multiple lockfiles · no tests / CI / pre-commit gate |
 
 ```bash
-harnessd intake-scan ~/code/shop-api          # one repo → markdown
-harnessd intake-scan --all --summary          # every repo: scores and counts only
+crossbrain intake-scan ~/code/shop-api          # one repo → markdown
+crossbrain intake-scan --all --summary          # every repo: scores and counts only
 ```
 
 ---
@@ -307,13 +307,13 @@ harnessd intake-scan --all --summary          # every repo: scores and counts on
 ```mermaid
 flowchart LR
   subgraph M1["Laptop"]
-    A1["you add a skill<br/>or retro writes a lesson"] --> S1["harnessd sync"]
+    A1["you add a skill<br/>or retro writes a lesson"] --> S1["crossbrain sync"]
   end
   subgraph GIT["git remote · private"]
     R[("brain pack")]
   end
   subgraph M2["Desktop · daily / at logon"]
-    S2["harnessd sync"] --> I2["pull → tests → install<br/>→ brain → capabilities → drift"]
+    S2["crossbrain sync"] --> I2["pull → tests → install<br/>→ brain → capabilities → drift"]
   end
   S1 -- "scan → preflight → commit → push" --> R
   R -- pull --> S2
@@ -354,25 +354,25 @@ Full threat model: **[docs/SECURITY.md](docs/SECURITY.md)**.
 
 | Command | Does |
 |---|---|
-| `harnessd install [--targets claude,agents] [--dry-run]` | Install skills, agents, instruction blocks and the Claude hook |
-| `harnessd sync [--no-push] [--quiet]` | Pull → tests → adopt → install → brain → capabilities → drift |
-| `harnessd schedule on\|off` | Daily and at-logon sync (Task Scheduler / cron) |
-| `harnessd doctor` | Detected agent CLIs, targets, packs and hook status |
-| `harnessd pack init\|add <dir>` | Create or attach a brain pack |
-| `harnessd config [key [value]]` | Read or change `~/.harnessd/config.json` |
-| `harnessd mine [--out DIR]` | Git history → redacted per-repo digests |
-| `harnessd brain` | Rebuild the brain map from `repo-*` skills |
-| `harnessd capabilities [--check\|--local]` | Rebuild the capabilities index |
-| `harnessd adopt [--dry-run]` | Adopt hand-added skills into your pack |
-| `harnessd ecc search\|show\|use\|drop\|list` | Work with the ECC library |
-| `harnessd intake-scan <repo> \| --all [--summary]` | The deterministic project audit |
-| `harnessd preflight [--staged] [path]` | The commit gate |
-| `harnessd hooks install\|uninstall [path\|--all]` | The gate as a git pre-commit hook |
-| `harnessd drift` | Repos whose fixes outran their skill, plus ECC upstream status |
-| `harnessd shim [--port N]` | Localhost secret-redacting proxy for memory services |
+| `crossbrain install [--targets claude,agents] [--dry-run]` | Install skills, agents, instruction blocks and the Claude hook |
+| `crossbrain sync [--no-push] [--quiet]` | Pull → tests → adopt → install → brain → capabilities → drift |
+| `crossbrain schedule on\|off` | Daily and at-logon sync (Task Scheduler / cron) |
+| `crossbrain doctor` | Detected agent CLIs, targets, packs and hook status |
+| `crossbrain pack init\|add <dir>` | Create or attach a brain pack |
+| `crossbrain config [key [value]]` | Read or change `~/.crossbrain/config.json` |
+| `crossbrain mine [--out DIR]` | Git history → redacted per-repo digests |
+| `crossbrain brain` | Rebuild the brain map from `repo-*` skills |
+| `crossbrain capabilities [--check\|--local]` | Rebuild the capabilities index |
+| `crossbrain adopt [--dry-run]` | Adopt hand-added skills into your pack |
+| `crossbrain ecc search\|show\|use\|drop\|list` | Work with the ECC library |
+| `crossbrain intake-scan <repo> \| --all [--summary]` | The deterministic project audit |
+| `crossbrain preflight [--staged] [path]` | The commit gate |
+| `crossbrain hooks install\|uninstall [path\|--all]` | The gate as a git pre-commit hook |
+| `crossbrain drift` | Repos whose fixes outran their skill, plus ECC upstream status |
+| `crossbrain shim [--port N]` | Localhost secret-redacting proxy for memory services |
 
 <details>
-<summary><b>Configuration</b>: <code>~/.harnessd/config.json</code></summary>
+<summary><b>Configuration</b>: <code>~/.crossbrain/config.json</code></summary>
 
 ```json
 {
@@ -384,15 +384,15 @@ Full threat model: **[docs/SECURITY.md](docs/SECURITY.md)**.
 ```
 
 Available skill targets are `claude`, `agents`, `codex`, `cursor`, `gemini`, `opencode` and `kimi`. Instruction targets are `claude`,
-`codex`, `gemini` and `opencode`. Set `HARNESSD_HOME` to move the config and state directory.
+`codex`, `gemini` and `opencode`. Set `CROSSBRAIN_HOME` to move the config and state directory.
 </details>
 
 <details>
 <summary><b>Repository layout</b></summary>
 
 ```
-harnessd/
-├── harnessd.py              CLI
+crossbrain/
+├── crossbrain.py              CLI
 ├── install.sh / install.ps1 one-line installers
 ├── skills/                  core skills + active ECC skills + generated capabilities
 ├── agents/                  active ECC subagents
@@ -409,7 +409,7 @@ harnessd/
 <details>
 <summary><b>Does it send my code or prompts anywhere?</b></summary>
 
-No. harnessd is local files plus git. It has no telemetry and no server. The only network calls are `git` operations on remotes you
+No. crossbrain is local files plus git. It has no telemetry and no server. The only network calls are `git` operations on remotes you
 configure, and an optional `git ls-remote` to check whether ECC has moved upstream.
 </details>
 
@@ -425,27 +425,27 @@ lets your *own* lessons and hand-added skills follow you across machines.
 
 Every installed skill's description loads into every session. All of ECC costs roughly 15–20k tokens before you type, and several
 skills claim universal triggers that collide with each other. The library tier keeps all of it one file-read away.
-`harnessd ecc use <name>` loads anything you use often.
+`crossbrain ecc use <name>` loads anything you use often.
 </details>
 
 <details>
 <summary><b>Will it overwrite my existing CLAUDE.md / AGENTS.md?</b></summary>
 
-No. It writes a single block between `<!-- harnessd:begin -->` and `<!-- harnessd:end -->`, and it only touches tools whose config folder
-already exists. Skills and agents that harnessd did not install are never replaced or removed.
+No. It writes a single block between `<!-- crossbrain:begin -->` and `<!-- crossbrain:end -->`, and it only touches tools whose config folder
+already exists. Skills and agents that crossbrain did not install are never replaced or removed.
 </details>
 
 <details>
 <summary><b>How do I uninstall?</b></summary>
 
 ```bash
-harnessd schedule off
-harnessd hooks uninstall --all
-python ~/.harnessd/engine/scripts/install_brain_hook.py --uninstall
+crossbrain schedule off
+crossbrain hooks uninstall --all
+python ~/.crossbrain/engine/scripts/install_brain_hook.py --uninstall
 ```
 
-Then delete the skill folders listed in `~/.claude/skills/.harnessd-manifest.json` and `~/.agents/skills/.harnessd-manifest.json`, the
-harnessd blocks in your instruction files, and `~/.harnessd`.
+Then delete the skill folders listed in `~/.claude/skills/.crossbrain-manifest.json` and `~/.agents/skills/.crossbrain-manifest.json`, the
+crossbrain blocks in your instruction files, and `~/.crossbrain`.
 </details>
 
 ---

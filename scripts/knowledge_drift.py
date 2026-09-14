@@ -1,7 +1,7 @@
 """
 Which repo skills has reality moved past? Lists repos with fix-like commits newer than their skill.
 
-    harnessd drift [--out FILE]        (sync runs it; default ~/.harnessd/state/drift.md)
+    crossbrain drift [--out FILE]        (sync runs it; default ~/.crossbrain/state/drift.md)
 
 A skill is written once; the repo keeps shipping. Fixes that land after a skill was last committed may
 hold a defect class the skill does not know. This names them so `retro` or a re-mine can fold them in.
@@ -57,7 +57,7 @@ def main():
             rows.append((r["repo"], r["skill"], since[:10], new))
 
     L = ["# Knowledge drift", "", "Repos with fix-like commits newer than their skill. Fold these in with `retro`, "
-         "or re-mine the repo with `harnessd mine`.", ""]
+         "or re-mine the repo with `crossbrain mine`.", ""]
     if not brain["repos"]:
         L.append("No repo skills yet - see the `history-to-skills` skill.")
     elif not rows:

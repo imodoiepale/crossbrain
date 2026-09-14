@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="400" viewBox="0 0 1280 400" role="img" aria-labelledby="t d">
-  <title id="t">harnessd</title>
+  <title id="t">crossbrain</title>
   <desc id="d">One brain for every coding agent: Claude Code, Codex, Cursor, Gemini CLI, OpenCode, Kimi Code</desc>
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
@@ -31,7 +31,7 @@
     <path d="M1010 200 L1140 90"/><path d="M1010 200 L1150 200"/><path d="M1010 200 L1140 310"/>
   </g>
   <circle cx="1010" cy="200" r="46" fill="#0b1020" stroke="url(#accent)" stroke-width="3"/>
-  <text x="1010" y="211" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="30" font-weight="700" fill="#e2e8f0">hd</text>
+  <text x="1010" y="211" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="30" font-weight="700" fill="#e2e8f0">cb</text>
 
   <g font-family="ui-sans-serif,system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#cbd5e1" text-anchor="middle">
     <g><rect x="812" y="68" width="136" height="36" rx="18" fill="#0f172a" stroke="#334155"/><text x="880" y="91">Claude Code</text></g>
@@ -43,7 +43,7 @@
   </g>
 
   <!-- wordmark -->
-  <text x="72" y="170" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="92" font-weight="800" fill="#f8fafc" letter-spacing="-2">harnessd</text>
+  <text x="72" y="170" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="92" font-weight="800" fill="#f8fafc" letter-spacing="-2">crossbrain</text>
   <rect x="76" y="192" width="300" height="6" rx="3" fill="url(#accent)"/>
   <text x="74" y="246" font-family="ui-sans-serif,system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif" font-size="30" font-weight="600" fill="#e2e8f0">One brain for every coding agent.</text>
   <text x="74" y="290" font-family="ui-sans-serif,system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif" font-size="19" fill="#94a3b8">Skills that learn from your git history · security gates · project intake</text>

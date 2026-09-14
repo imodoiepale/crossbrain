@@ -1,12 +1,12 @@
 ---
 name: brain
-description: Entry point for any coding task on a machine running harnessd. Use at the start of every task, when unsure which skill applies, when starting or inheriting a project, when asked "what do we know about this repo", or before building, debugging, reviewing or shipping. Routes to the matching repo-* skill, capabilities, project-intake, ship and retro, and says where each kind of knowledge lives and where new lessons go.
+description: Entry point for any coding task on a machine running crossbrain. Use at the start of every task, when unsure which skill applies, when starting or inheriting a project, when asked "what do we know about this repo", or before building, debugging, reviewing or shipping. Routes to the matching repo-* skill, capabilities, project-intake, ship and retro, and says where each kind of knowledge lives and where new lessons go.
 ---
 
 # Brain
 
-The routing table and the operating loop for harnessd. The knowledge itself lives in skills: generic
-ones from the engine, and personal ones in your **brain pack** (`harnessd config packs`). The generated
+The routing table and the operating loop for crossbrain. The knowledge itself lives in skills: generic
+ones from the engine, and personal ones in your **brain pack** (`crossbrain config packs`). The generated
 map of your repos is `<pack>/brain/BRAIN.md`, with `brain.json` for machines.
 
 ## The loop, every task
@@ -30,9 +30,9 @@ map of your repos is `<pack>/brain/BRAIN.md`, with `brain.json` for machines.
 
 | Layer | Holds | Written by |
 |---|---|---|
-| `repo-*` skills (pack) | One repo's stack, verify commands, defect classes that already shipped (with commit evidence), non-negotiables | `harnessd mine` + `history-to-skills`, then `retro` |
+| `repo-*` skills (pack) | One repo's stack, verify commands, defect classes that already shipped (with commit evidence), non-negotiables | `crossbrain mine` + `history-to-skills`, then `retro` |
 | Lessons skill (pack) | Defect classes seen in two or more repos | Promoted by `retro` |
-| Engine skills | `brain`, `capabilities`, `project-intake`, `ship`, `retro`, `history-to-skills`, active ECC skills | harnessd |
+| Engine skills | `brain`, `capabilities`, `project-intake`, `ship`, `retro`, `history-to-skills`, active ECC skills | crossbrain |
 | Repo `AGENTS.md` / `CLAUDE.md` | Rules that must be enforced inside that repo, for any agent | `retro` |
 | Agent memory | Transferable preferences | `retro` |
 | Code graph (optional) | Structure: what calls what, and what breaks if this changes | graph tooling |
@@ -42,7 +42,7 @@ Promote it to the lessons skill. Is it a preference? Save it to memory. Is it a 
 
 ## Standing rules
 
-- **Never inline or paste a secret.** Commits go through `harnessd preflight --staged`.
+- **Never inline or paste a secret.** Commits go through `crossbrain preflight --staged`.
 - **Rule of ten.** If a command has run ten times with unchanged output, something is missing (a doc, a
   credential, a spec, an environment). Name it and ask for it.
 - **One task per session.** End at the task boundary, not when context runs out.
@@ -51,6 +51,6 @@ Promote it to the lessons skill. Is it a preference? Save it to memory. Is it a 
 
 ## Keeping it current, on every machine
 
-`harnessd sync` (daily with `harnessd schedule on`) pulls the engine and your packs, runs the engine's
+`crossbrain sync` (daily with `crossbrain schedule on`) pulls the engine and your packs, runs the engine's
 tests, adopts skills you added by hand, reinstalls into every agent CLI, and rebuilds the brain and the
 capabilities index.

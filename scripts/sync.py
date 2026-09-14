@@ -1,9 +1,9 @@
 """
 Keep this machine identical to every other machine, and let the knowledge grow.
 
-    python harnessd.py sync             # once
-    python harnessd.py sync --no-push   # commit adoptions locally but do not push
-    python harnessd.py schedule on      # daily + at logon (Windows Task Scheduler / cron)
+    python crossbrain.py sync             # once
+    python crossbrain.py sync --no-push   # commit adoptions locally but do not push
+    python crossbrain.py schedule on      # daily + at logon (Windows Task Scheduler / cron)
 
 Git is the sync channel. Every machine runs the same loop:
 
@@ -34,7 +34,7 @@ from pathlib import Path
 
 import hconfig as hc
 
-TASK = "harnessd-sync"
+TASK = "crossbrain-sync"
 
 
 def run(args: list[str], cwd: Path | None = None) -> subprocess.CompletedProcess:
@@ -93,7 +93,7 @@ def commit_owned_changes(pack: Path, adopted: list[str], push: bool = True) -> s
         return "commit REFUSED by preflight - changes left unstaged for review:\n" + gate.stdout.strip()
     skills = sorted({p.split("/")[1] for p in pending if p.startswith("skills/")})
     subject = f"feat(skills): adopt {', '.join(skills)}" if skills else "chore(brain): rebuild brain map"
-    body = (f"Committed by harnessd sync on {platform.node()} after the supply-chain scan and preflight passed.\n"
+    body = (f"Committed by crossbrain sync on {platform.node()} after the supply-chain scan and preflight passed.\n"
             "Dependency folders are never adopted; see each skill's .adopted.json.")
     c = git(pack, "commit", "--quiet", "-m", subject + "\n\n" + body)
     if c.returncode != 0:
@@ -152,7 +152,7 @@ def sync(push: bool = True, quiet: bool = False) -> int:
         if adopted:
             say(f"adopted into {pack.name}: {', '.join(adopted)}")
     else:
-        say("no brain pack configured - hand-added skills are not shared (harnessd pack init <dir>)")
+        say("no brain pack configured - hand-added skills are not shared (crossbrain pack init <dir>)")
 
     import install as inst
     inst.install(cfg, log=lambda m: say(m.strip()))
@@ -167,7 +167,7 @@ def sync(push: bool = True, quiet: bool = False) -> int:
 
 
 def schedule(on: bool) -> int:
-    cmd = f'"{sys.executable}" "{hc.ENGINE / "harnessd.py"}" sync --quiet'
+    cmd = f'"{sys.executable}" "{hc.ENGINE / "crossbrain.py"}" sync --quiet'
     if platform.system() == "Windows":
         if not on:
             for name in (TASK, f"{TASK}-logon"):
@@ -180,10 +180,10 @@ def schedule(on: bool) -> int:
         print("logon sync registered" if b.returncode == 0 else "logon trigger needs an elevated shell - skipped")
         return a.returncode
     if not shutil.which("crontab"):
-        print("crontab not found - run `harnessd sync` from your own scheduler")
+        print("crontab not found - run `crossbrain sync` from your own scheduler")
         return 1
     current = run(["crontab", "-l"]).stdout
-    lines = [l for l in current.splitlines() if "harnessd.py\" sync" not in l]
+    lines = [l for l in current.splitlines() if "crossbrain.py\" sync" not in l]
     if on:
         lines += [f"0 9 * * * {cmd} >/dev/null 2>&1", f"@reboot {cmd} >/dev/null 2>&1"]
     r = subprocess.run(["crontab", "-"], input="\n".join(lines) + "\n", text=True)

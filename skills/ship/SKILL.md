@@ -1,6 +1,6 @@
 ---
 name: ship
-description: Branch, verify, commit, PR, tag and merge discipline. Use whenever work is about to be committed, pushed, merged or released - including bare requests like "push to main", "commit this", "ship it", "deploy", "make a PR", or "is it pushed". Enforces short-lived branch lanes, the harnessd preflight secret/size/branch gate, commit messages that say why, PRs that state what was NOT verified, tagging, and routing the lesson through retro.
+description: Branch, verify, commit, PR, tag and merge discipline. Use whenever work is about to be committed, pushed, merged or released - including bare requests like "push to main", "commit this", "ship it", "deploy", "make a PR", or "is it pushed". Enforces short-lived branch lanes, the crossbrain preflight secret/size/branch gate, commit messages that say why, PRs that state what was NOT verified, tagging, and routing the lesson through retro.
 ---
 
 # Ship
@@ -42,7 +42,7 @@ access policy or a timezone. If the repo has no tests, say so in the PR.
 ## Preflight
 
 ```bash
-harnessd preflight --staged        # or install it once: harnessd hooks install --all
+crossbrain preflight --staged        # or install it once: crossbrain hooks install --all
 ```
 
 It refuses a commit for any of three reasons:

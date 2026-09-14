@@ -6,7 +6,7 @@ card as additionalContext. Skills load only when the model opens them; this puts
 matters in front of it from the first turn, for about 400 tokens.
 
 It also keeps this machine's `capabilities` index current, and names skills you added by hand that
-`harnessd sync` has not shared yet.
+`crossbrain sync` has not shared yet.
 
 Fails open: missing brain, bad JSON, unknown directory -> no output, exit 0. A hook that breaks session
 start gets switched off, and then it protects nothing.
@@ -35,7 +35,7 @@ def match(cwd: str, repos: list[dict], root: Path) -> dict | None:
 
 def card(r: dict, brain: dict) -> str:
     lessons = brain.get("lessons_skill")
-    L = [f"[harnessd] You are in {r['repo']} - {r['what']}",
+    L = [f"[crossbrain] You are in {r['repo']} - {r['what']}",
          f"Load skill `{r['skill']}` before editing" + (f", and `{lessons}` for cross-repo rules." if lessons else ".")]
     if r["exposure"]:
         L.append("WARNING: this repo has committed secrets on record. Never inline keys; read the skill before touching env or config.")
@@ -90,15 +90,15 @@ def main():
     if r:
         text = card(r, brain)
     elif cwd and Path(cwd).resolve() == root.resolve():
-        text = (f"[harnessd] Projects root: {len(brain['repos'])} repos mapped. Load `brain` to route to the right "
+        text = (f"[crossbrain] Projects root: {len(brain['repos'])} repos mapped. Load `brain` to route to the right "
                 "repo skill, and `capabilities` for everything else.")
     elif pending:
-        text = "[harnessd]"
+        text = "[crossbrain]"
     else:
         return
     if pending:
         text += (f"\nSkills added by hand on this machine, not yet shared: {', '.join(pending)}. "
-                 "`harnessd sync` adopts them (scanned) into your brain pack.")
+                 "`crossbrain sync` adopts them (scanned) into your brain pack.")
     print(json.dumps({"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": text}}))
 
 

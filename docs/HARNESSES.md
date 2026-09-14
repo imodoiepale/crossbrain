@@ -1,6 +1,6 @@
 # Supported agent CLIs
 
-harnessd installs **Agent Skills** (a folder containing `SKILL.md` with `name` + `description` frontmatter), which
+crossbrain installs **Agent Skills** (a folder containing `SKILL.md` with `name` + `description` frontmatter), which
 is the open format these tools share. It writes to two global folders by default. Between them, those two folders reach every tool below:
 
 | Folder | Read by |
@@ -8,11 +8,11 @@ is the open format these tools share. It writes to two global folders by default
 | `~/.claude/skills` | Claude Code, OpenCode, Kimi Code |
 | `~/.agents/skills` | Codex, Cursor, Gemini CLI, OpenCode, Kimi Code |
 
-Add more targets with `harnessd config skill_targets '["claude","agents","cursor"]'`.
+Add more targets with `crossbrain config skill_targets '["claude","agents","cursor"]'`.
 
 ## Per tool
 
-| Tool | Global skills | Global instructions (`harnessd` block) | Session hook | Source |
+| Tool | Global skills | Global instructions (`crossbrain` block) | Session hook | Source |
 |---|---|---|---|---|
 | **Claude Code** | `~/.claude/skills` | `~/.claude/CLAUDE.md` | ✅ SessionStart brain card | Claude Code docs |
 | **Codex** | `~/.agents/skills` (also `~/.codex/skills`) | `~/.codex/AGENTS.md` | — | [Codex customisation](https://codex.danielvaughan.com/2026/04/12/codex-cli-customisation-stack-unified-system/) |
@@ -26,14 +26,14 @@ open an issue.
 
 ## Things worth knowing
 
-- **Instruction files are only touched where the tool already has a config folder.** harnessd never creates
+- **Instruction files are only touched where the tool already has a config folder.** crossbrain never creates
   `~/.gemini/` just to write a `GEMINI.md`. Everything outside its marked block is left untouched:
   ```
-  <!-- harnessd:begin --> … <!-- harnessd:end -->
+  <!-- crossbrain:begin --> … <!-- crossbrain:end -->
   ```
 - **OpenCode instructions are opt-in.** OpenCode reads `~/.claude/CLAUDE.md` *only when* `~/.config/opencode/AGENTS.md`
   does not exist. Creating that file by default would silently drop your Claude rules from OpenCode. Enable it
-  with `harnessd config instruction_targets '["claude","codex","gemini","opencode"]'`.
+  with `crossbrain config instruction_targets '["claude","codex","gemini","opencode"]'`.
 - **Duplicates.** OpenCode and Kimi Code read both default folders, so each skill exists twice on disk for them.
   If a tool lists a skill twice, set `skill_targets` to the single folder that tool needs.
 - **Session hooks are Claude Code only.** Other tools get the same routing through their instruction file and the

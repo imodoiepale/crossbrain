@@ -35,7 +35,7 @@ ROOT = hc.ENGINE
 # Where people drop skills by hand. Both are scanned; each carries the installer manifest.
 USER_SKILL_DIRS = [hc.expand(hc.SKILL_TARGETS["claude"]), hc.expand(hc.SKILL_TARGETS["agents"])]
 USER_SKILLS = USER_SKILL_DIRS[0]
-MANIFEST_NAME = ".harnessd-manifest.json"
+MANIFEST_NAME = ".crossbrain-manifest.json"
 MANIFEST = USER_SKILLS / MANIFEST_NAME
 # Dependency and cache folders only. NOT dist/ or build/: a skill may ship built files it runs from,
 # and a copy missing them would install broken on every other PC.
@@ -91,7 +91,7 @@ def adopt(user_skills: Path | None = None, repo_skills: Path | None = None, mani
     if repo_skills is None:
         pack = hc.primary_pack()
         if pack is None:
-            result["error"] = "no brain pack configured - run: harnessd pack init <dir>"
+            result["error"] = "no brain pack configured - run: crossbrain pack init <dir>"
             return result
         repo_skills = pack / "skills"
         repo_skills.mkdir(parents=True, exist_ok=True)

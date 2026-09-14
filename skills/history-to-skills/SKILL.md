@@ -1,6 +1,6 @@
 ---
 name: history-to-skills
-description: Turn the git history of every repository you own into one repo-* skill per repo - stack, real verify commands, defect classes that already shipped (with commit hashes and root causes read from the diffs), hotspot files and non-negotiables - plus a lessons skill for classes that recur across repos. Use when setting up harnessd for the first time, when adding a repo, when `harnessd drift` shows fixes newer than a skill, or when asked to "learn from my repos / commits / past mistakes".
+description: Turn the git history of every repository you own into one repo-* skill per repo - stack, real verify commands, defect classes that already shipped (with commit hashes and root causes read from the diffs), hotspot files and non-negotiables - plus a lessons skill for classes that recur across repos. Use when setting up crossbrain for the first time, when adding a repo, when `crossbrain drift` shows fixes newer than a skill, or when asked to "learn from my repos / commits / past mistakes".
 ---
 
 # History to skills
@@ -11,7 +11,7 @@ skills that every future agent session loads.
 ## 1. Mine (deterministic, no LLM)
 
 ```bash
-harnessd mine --out ~/harnessd-digests --min-commits 10     # reads harnessd config projects_root
+crossbrain mine --out ~/crossbrain-digests --min-commits 10     # reads crossbrain config projects_root
 ```
 
 This writes one digest per repo, **with secrets redacted before writing**. Each digest has:
@@ -58,11 +58,11 @@ naming the repos, the rule and the guard (for example "RLS fails silently in bot
 ## 4. Build and install
 
 ```bash
-harnessd brain          # the repo map + SessionStart cards
-harnessd sync           # commit your pack, install into every agent CLI
+crossbrain brain          # the repo map + SessionStart cards
+crossbrain sync           # commit your pack, install into every agent CLI
 ```
 
 ## Keep it current
 
-`harnessd drift` (run by every sync) lists repos with fix commits newer than their skill. Fold those in with `retro`,
+`crossbrain drift` (run by every sync) lists repos with fix commits newer than their skill. Fold those in with `retro`,
 or re-mine that one repo.

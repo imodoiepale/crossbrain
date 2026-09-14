@@ -82,7 +82,7 @@ def check(repo: Path, staged: bool = False, max_mb: float = 5.0, protected=("mai
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(description="harnessd commit gate")
+    ap = argparse.ArgumentParser(description="crossbrain commit gate")
     ap.add_argument("path", nargs="?", default=".")
     ap.add_argument("--staged", action="store_true")
     ap.add_argument("--max-mb", type=float, default=5.0)

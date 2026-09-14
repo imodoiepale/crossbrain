@@ -36,13 +36,13 @@ jobs:
       - name: Install smoke test (sandboxed home)
         shell: bash
         run: |
-          export HOME="$RUNNER_TEMP/home" USERPROFILE="$RUNNER_TEMP/home" HARNESSD_HOME="$RUNNER_TEMP/home/.harnessd"
+          export HOME="$RUNNER_TEMP/home" USERPROFILE="$RUNNER_TEMP/home" CROSSBRAIN_HOME="$RUNNER_TEMP/home/.crossbrain"
           mkdir -p "$HOME/.claude" "$HOME/.codex"
-          python harnessd.py install
-          python harnessd.py doctor
+          python crossbrain.py install
+          python crossbrain.py doctor
           test -f "$HOME/.claude/skills/brain/SKILL.md"
           test -f "$HOME/.agents/skills/project-intake/SKILL.md"
           test -f "$HOME/.claude/skills/capabilities/SKILL.md"
-          grep -q "harnessd:begin" "$HOME/.codex/AGENTS.md"
-          python harnessd.py install   # idempotent
-          test "$(grep -c 'harnessd:begin' "$HOME/.codex/AGENTS.md")" = "1"
+          grep -q "crossbrain:begin" "$HOME/.codex/AGENTS.md"
+          python crossbrain.py install   # idempotent
+          test "$(grep -c 'crossbrain:begin' "$HOME/.codex/AGENTS.md")" = "1"

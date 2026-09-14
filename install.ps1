@@ -1,14 +1,14 @@
-# harnessd one-line installer (Windows PowerShell 5.1+ / PowerShell 7)
+# crossbrain one-line installer (Windows PowerShell 5.1+ / PowerShell 7)
 #
-#   irm https://raw.githubusercontent.com/imodoiepale/harnessd/main/install.ps1 | iex
+#   irm https://raw.githubusercontent.com/imodoiepale/crossbrain/main/install.ps1 | iex
 #
-# Clones (or updates) the engine into ~\.harnessd\engine, adds a `harnessd` launcher to your user PATH,
+# Clones (or updates) the engine into ~\.crossbrain\engine, adds a `crossbrain` launcher to your user PATH,
 # and installs skills, agents and instructions into every agent CLI it finds. Re-run to update.
 # It never asks for or stores a credential.
 $ErrorActionPreference = 'Stop'
 
-$Repo   = if ($env:HARNESSD_REPO) { $env:HARNESSD_REPO } else { 'https://github.com/imodoiepale/harnessd.git' }
-$HomeD  = if ($env:HARNESSD_HOME) { $env:HARNESSD_HOME } else { Join-Path $HOME '.harnessd' }
+$Repo   = if ($env:CROSSBRAIN_REPO) { $env:CROSSBRAIN_REPO } else { 'https://github.com/imodoiepale/crossbrain.git' }
+$HomeD  = if ($env:CROSSBRAIN_HOME) { $env:CROSSBRAIN_HOME } else { Join-Path $HOME '.crossbrain' }
 $Engine = Join-Path $HomeD 'engine'
 $Bin    = Join-Path $HomeD 'bin'
 
@@ -24,19 +24,19 @@ $ErrorActionPreference = 'Continue'
 if (Test-Path (Join-Path $Engine '.git')) {
   Say "updating $Engine"; & git -C $Engine pull --ff-only --quiet
 } else {
-  Say "cloning harnessd into $Engine"
+  Say "cloning crossbrain into $Engine"
   New-Item -ItemType Directory -Force $HomeD | Out-Null
   & git clone --depth 1 --quiet $Repo $Engine
 }
-if (-not (Test-Path (Join-Path $Engine 'harnessd.py'))) { throw "clone failed: $Engine" }
+if (-not (Test-Path (Join-Path $Engine 'crossbrain.py'))) { throw "clone failed: $Engine" }
 
 New-Item -ItemType Directory -Force $Bin | Out-Null
-Set-Content -Path (Join-Path $Bin 'harnessd.cmd') -Encoding ascii -Value "@echo off`r`n`"$Py`" `"$Engine\harnessd.py`" %*"
+Set-Content -Path (Join-Path $Bin 'crossbrain.cmd') -Encoding ascii -Value "@echo off`r`n`"$Py`" `"$Engine\crossbrain.py`" %*"
 $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
 if (($userPath -split ';') -notcontains $Bin) {
   [Environment]::SetEnvironmentVariable('Path', "$userPath;$Bin", 'User')
-  Say "added $Bin to your user PATH (open a new terminal to use 'harnessd')"
+  Say "added $Bin to your user PATH (open a new terminal to use 'crossbrain')"
 }
 
-& $Py (Join-Path $Engine 'harnessd.py') install @args
-& $Py (Join-Path $Engine 'harnessd.py') doctor
+& $Py (Join-Path $Engine 'crossbrain.py') install @args
+& $Py (Join-Path $Engine 'crossbrain.py') doctor

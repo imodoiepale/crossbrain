@@ -47,10 +47,10 @@ def main():
     if not data["hooks"]["SessionStart"]:
         del data["hooks"]["SessionStart"]
     if SETTINGS.exists():
-        shutil.copy2(SETTINGS, SETTINGS.with_suffix(".json.bak-harnessd"))
+        shutil.copy2(SETTINGS, SETTINGS.with_suffix(".json.bak-crossbrain"))
     SETTINGS.parent.mkdir(parents=True, exist_ok=True)
     SETTINGS.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
-    print(("uninstalled" if a.uninstall else "installed") + f" brain hook in {SETTINGS} (backup: settings.json.bak-harnessd)")
+    print(("uninstalled" if a.uninstall else "installed") + f" brain hook in {SETTINGS} (backup: settings.json.bak-crossbrain)")
     return 0
 
 

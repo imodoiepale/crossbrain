@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping. A few rules keep harnessd trustworthy:
+Thanks for helping. A few rules keep crossbrain trustworthy:
 
 1. **Run the gates:**
    ```bash

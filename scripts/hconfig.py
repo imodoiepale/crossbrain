@@ -1,7 +1,7 @@
 """
-harnessd configuration: where the engine lives, where your brain packs are, which agent CLIs to feed.
+crossbrain configuration: where the engine lives, where your brain packs are, which agent CLIs to feed.
 
-    ~/.harnessd/config.json      (override the directory with HARNESSD_HOME)
+    ~/.crossbrain/config.json      (override the directory with CROSSBRAIN_HOME)
 
 {
   "projects_root": "~/Documents/GitHub",   # where your repos are checked out (brain hook, audit, mining)
@@ -23,7 +23,7 @@ import os
 from pathlib import Path
 
 ENGINE = Path(__file__).resolve().parent.parent
-HOME = Path(os.environ.get("HARNESSD_HOME", Path.home() / ".harnessd")).expanduser()
+HOME = Path(os.environ.get("CROSSBRAIN_HOME", Path.home() / ".crossbrain")).expanduser()
 CONFIG = HOME / "config.json"
 
 # Global skill folders each agent CLI reads (verified against each tool's docs, 2026-09 - see docs/HARNESSES.md).
@@ -40,7 +40,7 @@ SKILL_TARGETS = {
     "kimi": "~/.kimi/skills",
 }
 
-# Global instruction files. harnessd writes a marked block and never touches the rest of the file.
+# Global instruction files. crossbrain writes a marked block and never touches the rest of the file.
 # opencode is deliberately NOT a default: OpenCode only falls back to ~/.claude/CLAUDE.md when its own
 # AGENTS.md is absent, so creating one would silently drop your Claude rules from OpenCode.
 INSTRUCTION_TARGETS = {
@@ -94,7 +94,7 @@ def agent_roots(cfg: dict | None = None) -> list[Path]:
 
 
 def projects_root(cfg: dict | None = None) -> Path:
-    return expand(os.environ.get("HARNESSD_PROJECTS") or (cfg or load())["projects_root"])
+    return expand(os.environ.get("CROSSBRAIN_PROJECTS") or (cfg or load())["projects_root"])
 
 
 def brain_dir(cfg: dict | None = None) -> Path:

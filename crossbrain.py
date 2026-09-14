@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-harnessd - one brain for every coding agent.
+crossbrain - one brain for every coding agent.
 
   install                 install skills, agents and instructions into every agent CLI on this machine
   sync [--no-push]        pull, test, adopt hand-added skills, install, rebuild, report drift
   schedule on|off         run sync daily and at logon
   doctor                  show detected agent CLIs, targets, packs and health
   pack init|add <dir>     create or attach a brain pack (your private skills and lessons)
-  config [key [value]]    read or change ~/.harnessd/config.json
+  config [key [value]]    read or change ~/.crossbrain/config.json
 
   intake-scan <repo>      deterministic architecture + security + hygiene audit (alias: audit)
   mine [--out DIR]        turn every repo's git history into redacted digests
@@ -45,7 +45,7 @@ CLIS = {"claude": "Claude Code", "codex": "Codex", "cursor": "Cursor", "gemini":
 
 def doctor() -> int:
     cfg = hc.load()
-    print(f"harnessd engine   {hc.ENGINE}")
+    print(f"crossbrain engine   {hc.ENGINE}")
     print(f"config            {hc.CONFIG} ({'present' if hc.CONFIG.exists() else 'defaults'})")
     print(f"python            {platform.python_version()}  git {'yes' if shutil.which('git') else 'MISSING'}")
     print(f"projects_root     {hc.projects_root(cfg)}")
@@ -64,7 +64,7 @@ def doctor() -> int:
         mark = "+" if p.exists() else "MISSING"
         print(f"  {mark} {p}")
     if not cfg["packs"]:
-        print("  none - run `harnessd pack init ~/my-brain` to keep your own skills and lessons")
+        print("  none - run `crossbrain pack init ~/my-brain` to keep your own skills and lessons")
     hook = hc.expand("~/.claude/settings.json")
     hooked = hook.exists() and "brain_hook.py" in hook.read_text(encoding="utf-8", errors="replace")
     print(f"\nClaude SessionStart brain hook: {'installed' if hooked else 'not installed'}")
@@ -73,7 +73,7 @@ def doctor() -> int:
 
 def pack_cmd(args: list[str]) -> int:
     if len(args) != 2 or args[0] not in ("init", "add"):
-        print("usage: harnessd pack init|add <dir>")
+        print("usage: crossbrain pack init|add <dir>")
         return 2
     d = hc.expand(args[1]).resolve()
     cfg = hc.load()
@@ -82,21 +82,21 @@ def pack_cmd(args: list[str]) -> int:
             (d / sub).mkdir(parents=True, exist_ok=True)
         (d / ".gitignore").write_text("digests/\nnode_modules/\n.env\n.env.*\n!.env.example\n", encoding="utf-8")
         (d / "README.md").write_text(
-            "# My harnessd brain pack\n\nPrivate knowledge for [harnessd](https://github.com/imodoiepale/harnessd):\n\n"
-            "- `skills/repo-*`: one skill per repo, distilled from its history (`harnessd mine`, then the `history-to-skills` skill)\n"
-            "- `skills/<name>`: skills adopted from any of your machines by `harnessd sync`\n"
-            "- `brain/`: generated map (`harnessd brain`)\n\nKeep this repository **private**.\n", encoding="utf-8")
+            "# My crossbrain brain pack\n\nPrivate knowledge for [crossbrain](https://github.com/imodoiepale/crossbrain):\n\n"
+            "- `skills/repo-*`: one skill per repo, distilled from its history (`crossbrain mine`, then the `history-to-skills` skill)\n"
+            "- `skills/<name>`: skills adopted from any of your machines by `crossbrain sync`\n"
+            "- `brain/`: generated map (`crossbrain brain`)\n\nKeep this repository **private**.\n", encoding="utf-8")
         (d / "skills" / ".adopt-ignore").write_text("# skills owned by their own installers\ngraphify\n", encoding="utf-8")
         if not (d / ".git").exists():
             subprocess.run(["git", "init", "-q", str(d)], check=False)
             # Start clean: sync only commits adoptions into a pack with no uncommitted changes.
             subprocess.run(["git", "-C", str(d), "add", "-A"], check=False)
-            first = subprocess.run(["git", "-C", str(d), "commit", "-q", "-m", "chore: initialise harnessd brain pack"],
+            first = subprocess.run(["git", "-C", str(d), "commit", "-q", "-m", "chore: initialise crossbrain brain pack"],
                                    capture_output=True, text=True)
             if first.returncode != 0:
                 # Usually no git identity. Left uncommitted, sync would treat the pack as dirty and never commit adoptions.
                 print("  warn: could not make the pack's first commit - set git user.name and user.email, then run:\n"
-                      f"        git -C \"{d}\" commit -m \"chore: initialise harnessd brain pack\"")
+                      f"        git -C \"{d}\" commit -m \"chore: initialise crossbrain brain pack\"")
     elif not d.exists():
         print(f"{d} does not exist")
         return 1
@@ -127,7 +127,7 @@ def config_cmd(args: list[str]) -> int:
 def hooks_cmd(args: list[str]) -> int:
     import install as inst
     if not args or args[0] not in ("install", "uninstall"):
-        print("usage: harnessd hooks install|uninstall [path|--all]")
+        print("usage: crossbrain hooks install|uninstall [path|--all]")
         return 2
     uninstall = args[0] == "uninstall"
     if "--all" in args:
@@ -156,9 +156,9 @@ def main(argv: list[str]) -> int:
         cfg = hc.load()
         if "--targets" in rest:
             cfg["skill_targets"] = rest[rest.index("--targets") + 1].split(",")
-        print("harnessd install")
+        print("crossbrain install")
         inst.install(cfg, dry_run="--dry-run" in rest)
-        print("\nDone. Start a new agent session to load the skills. Next: `harnessd doctor`, `harnessd schedule on`.")
+        print("\nDone. Start a new agent session to load the skills. Next: `crossbrain doctor`, `crossbrain schedule on`.")
         return 0
     if cmd == "sync":
         import sync
