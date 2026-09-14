@@ -137,6 +137,8 @@ class InstructRepoTest(RepoCase):
             (cwd / doc).write_text("## graphify\n\nRules: query first.\n", encoding="utf-8")
             for rel in hook_files:
                 (cwd / rel).parent.mkdir(parents=True, exist_ok=True)
+                if (cwd / rel).exists():           # real graphify backs up an existing settings file first
+                    (cwd / rel).with_name(Path(rel).name + ".graphify-bak").write_bytes((cwd / rel).read_bytes())
                 (cwd / rel).write_text('{"hooks": {"PreToolUse": [{"command": "C:/abs/graphify.EXE hook-guard read"}]}}',
                                        encoding="utf-8")
         return CompletedProcess(args, 0, "", "")
@@ -156,6 +158,8 @@ class InstructRepoTest(RepoCase):
         with mock.patch.object(components, "graphify_available", return_value=True):
             components.instruct_repo(self.repo, runner=self.fake_graphify)
         self.assertEqual((self.repo / ".claude" / "settings.json").read_bytes(), original)
+        self.assertEqual(sorted(p.name for p in (self.repo / ".claude").iterdir()), ["settings.json"],
+                         "graphify's .graphify-bak backup must not be left behind (Shalom-home rollout)")
 
 
 class ClaudeHooksTest(unittest.TestCase):

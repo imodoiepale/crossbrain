@@ -247,6 +247,10 @@ def instruct_repo(repo: Path, uninstall: bool = False, runner=None) -> str:
         for rel in hook_files:
             p = repo / rel
             snapshots[rel] = (p.read_bytes() if p.exists() else None, p.parent.exists())
+            # graphify backs up an existing settings file as <name>.graphify-bak before editing it
+            bak = p.with_name(p.name + ".graphify-bak")
+            snapshots[str(Path(rel).with_name(Path(rel).name + ".graphify-bak"))] = (
+                bak.read_bytes() if bak.exists() else None, p.parent.exists())
         args = [sys.executable, "-m", "graphify", platform, "uninstall" if uninstall else "install"]
         r = runner(args, repo) if runner else _run_in(args, repo, timeout=120)
         for rel, (before, parent_existed) in snapshots.items():
