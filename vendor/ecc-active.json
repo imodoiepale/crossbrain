@@ -1,0 +1,21 @@
+{
+  "skills": [
+    "architecture-decision-records",
+    "codebase-onboarding",
+    "database-migrations",
+    "deployment-patterns",
+    "hexagonal-architecture",
+    "nextjs-turbopack",
+    "postgres-patterns",
+    "production-audit",
+    "security-review",
+    "verification-loop"
+  ],
+  "agents": [
+    "architect",
+    "code-reviewer",
+    "database-reviewer",
+    "security-reviewer",
+    "silent-failure-hunter"
+  ]
+}

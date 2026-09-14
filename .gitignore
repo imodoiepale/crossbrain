@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+# Output that may describe your private repos - never commit it to the public engine
+digests/
+*-audit.md
+*-audit.json
+creds.csv
+# Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+# OS / editors
+.DS_Store
+Thumbs.db
+node_modules/

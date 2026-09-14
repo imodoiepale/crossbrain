@@ -1,0 +1,6 @@
+# Skills in ~/.claude/skills that adopt_skills.py must NOT copy into the harness.
+# One name per line. Use this for skills owned by their own installer, where a committed copy
+# would go stale against the tool that manages it.
+
+# Installed and versioned by `python -m graphify install` (install-skills.ps1 runs it).
+graphify

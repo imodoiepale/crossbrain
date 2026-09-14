@@ -1,0 +1,14 @@
+{
+  "url": "https://github.com/affaan-m/ecc",
+  "commit": "8321021c54d670126ce3b2969d5deb880b4b0c2a",
+  "license": "MIT",
+  "surfaces": {
+    "skills": 292,
+    "agents": 68,
+    "commands": 94,
+    "rules": 23,
+    "contexts": 3,
+    "workflows": 2,
+    "mcp-configs": 1
+  }
+}

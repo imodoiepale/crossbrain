@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  test:
+    name: ${{ matrix.os }} / python ${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ["3.9", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      # Secret patterns, the redaction shim, the audit scanner, skill adoption and the capabilities
+      # index. The false-positive fixtures matter as much as the catches.
+      - name: Unit tests
+        run: python -m unittest discover -s scripts -p "test_*.py" -v
+
+      - name: Capabilities index is current
+        run: python scripts/build_capabilities.py --check
+
+      # Dogfood: the engine passes its own commit gate. CI checks out a detached HEAD.
+      - name: Preflight on this repo
+        run: python scripts/preflight.py --allow-protected-branch .
+
+      # Install end to end into a throwaway home, never the runner's real one.
+      - name: Install smoke test (sandboxed home)
+        shell: bash
+        run: |
+          export HOME="$RUNNER_TEMP/home" USERPROFILE="$RUNNER_TEMP/home" HARNESSD_HOME="$RUNNER_TEMP/home/.harnessd"
+          mkdir -p "$HOME/.claude" "$HOME/.codex"
+          python harnessd.py install
+          python harnessd.py doctor
+          test -f "$HOME/.claude/skills/brain/SKILL.md"
+          test -f "$HOME/.agents/skills/project-intake/SKILL.md"
+          test -f "$HOME/.claude/skills/capabilities/SKILL.md"
+          grep -q "harnessd:begin" "$HOME/.codex/AGENTS.md"
+          python harnessd.py install   # idempotent
+          test "$(grep -c 'harnessd:begin' "$HOME/.codex/AGENTS.md")" = "1"

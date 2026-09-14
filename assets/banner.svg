@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="400" viewBox="0 0 1280 400" role="img" aria-labelledby="t d">
+  <title id="t">harnessd</title>
+  <desc id="d">One brain for every coding agent: Claude Code, Codex, Cursor, Gemini CLI, OpenCode, Kimi Code</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1020"/>
+      <stop offset="0.55" stop-color="#111a33"/>
+      <stop offset="1" stop-color="#1a1036"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#5eead4"/>
+      <stop offset="0.5" stop-color="#818cf8"/>
+      <stop offset="1" stop-color="#f472b6"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#818cf8" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#818cf8" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" fill="none" stroke="#ffffff" stroke-opacity="0.04"/>
+    </pattern>
+  </defs>
+
+  <rect width="1280" height="400" rx="24" fill="url(#bg)"/>
+  <rect width="1280" height="400" rx="24" fill="url(#grid)"/>
+
+  <!-- brain hub -->
+  <circle cx="1010" cy="200" r="150" fill="url(#glow)"/>
+  <g stroke="url(#accent)" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.9">
+    <path d="M1010 200 L880 90"/><path d="M1010 200 L870 200"/><path d="M1010 200 L880 310"/>
+    <path d="M1010 200 L1140 90"/><path d="M1010 200 L1150 200"/><path d="M1010 200 L1140 310"/>
+  </g>
+  <circle cx="1010" cy="200" r="46" fill="#0b1020" stroke="url(#accent)" stroke-width="3"/>
+  <text x="1010" y="211" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="30" font-weight="700" fill="#e2e8f0">hd</text>
+
+  <g font-family="ui-sans-serif,system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#cbd5e1" text-anchor="middle">
+    <g><rect x="812" y="68" width="136" height="36" rx="18" fill="#0f172a" stroke="#334155"/><text x="880" y="91">Claude Code</text></g>
+    <g><rect x="802" y="182" width="136" height="36" rx="18" fill="#0f172a" stroke="#334155"/><text x="870" y="205">Codex</text></g>
+    <g><rect x="812" y="292" width="136" height="36" rx="18" fill="#0f172a" stroke="#334155"/><text x="880" y="315">Cursor</text></g>
+    <g><rect x="1072" y="68" width="136" height="36" rx="18" fill="#0f172a" stroke="#334155"/><text x="1140" y="91">Gemini CLI</text></g>
+    <g><rect x="1082" y="182" width="136" height="36" rx="18" fill="#0f172a" stroke="#334155"/><text x="1150" y="205">OpenCode</text></g>
+    <g><rect x="1072" y="292" width="136" height="36" rx="18" fill="#0f172a" stroke="#334155"/><text x="1140" y="315">Kimi Code</text></g>
+  </g>
+
+  <!-- wordmark -->
+  <text x="72" y="170" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="92" font-weight="800" fill="#f8fafc" letter-spacing="-2">harnessd</text>
+  <rect x="76" y="192" width="300" height="6" rx="3" fill="url(#accent)"/>
+  <text x="74" y="246" font-family="ui-sans-serif,system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif" font-size="30" font-weight="600" fill="#e2e8f0">One brain for every coding agent.</text>
+  <text x="74" y="290" font-family="ui-sans-serif,system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif" font-size="19" fill="#94a3b8">Skills that learn from your git history · security gates · project intake</text>
+  <text x="74" y="318" font-family="ui-sans-serif,system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif" font-size="19" fill="#94a3b8">the full ECC library on demand · synced across every machine</text>
+</svg>
