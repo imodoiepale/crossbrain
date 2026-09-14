@@ -129,8 +129,11 @@ def sync(push: bool = True, quiet: bool = False) -> int:
 
     tests = run([sys.executable, "-m", "unittest", "discover", "-s", str(hc.ENGINE / "scripts"), "-p", "test_*.py"])
     if tests.returncode != 0:
+        failing = [l.strip() for l in tests.stderr.splitlines() if l.startswith(("FAIL:", "ERROR:"))]
         say("ABORT engine tests failed - refusing to install from a broken checkout")
-        say(tests.stderr.strip().splitlines()[-1] if tests.stderr.strip() else "")
+        for line in failing[:10] or tests.stderr.strip().splitlines()[-1:]:
+            say("  " + line)
+        say(f"  reproduce: python -m unittest discover -s \"{hc.ENGINE / 'scripts'}\" -p \"test_*.py\" -v")
         return 1
     say("gates pass")
 

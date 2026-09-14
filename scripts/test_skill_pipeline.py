@@ -10,10 +10,12 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).parent))
 import adopt_skills as ad  # noqa: E402
 import build_capabilities as bc  # noqa: E402
+import hconfig as hc  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 FAKE_SBP = "sbp_" + "a86bFAKEFAKEFAKEFAKEFAKEfake123"
@@ -41,6 +43,12 @@ class AdoptTest(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         t = Path(self.tmp.name)
+        # Never read this machine's real ~/.harnessd/config.json. A real brain pack that happens to hold a
+        # skill named like a fixture ("diagrammer") made adoption skip it, the tests failed, and sync then
+        # refused to install - on exactly the machines that use harnessd the most.
+        patcher = mock.patch.object(hc, "CONFIG", t / "no-config.json")
+        patcher.start()
+        self.addCleanup(patcher.stop)
         self.user, self.repo, self.manifest = t / "user", t / "repo", t / "user" / ".harness-manifest.json"
         self.user.mkdir(); self.repo.mkdir()
         good = skill(self.user, "diagrammer", body="Run node bin/x.js\n")
