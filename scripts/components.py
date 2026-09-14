@@ -223,6 +223,49 @@ def install_graph_hooks(repo: Path, uninstall: bool = False, runner=None, allow_
     return "graph hooks installed" + (" (tracked graph: expect graphify-out/ changes after commits)" if commits_graph else "")
 
 
+INSTRUCTION_PLATFORMS = {
+    # graphify installer -> (instruction file it writes, hook config files it also writes that we remove)
+    "claude": ("CLAUDE.md", [".claude/settings.json"]),
+    "codex": ("AGENTS.md", [".codex/hooks.json"]),
+}
+
+
+def instruct_repo(repo: Path, uninstall: bool = False, runner=None) -> str:
+    """Write graphify's graph-first section into the repo's CLAUDE.md and AGENTS.md (read by Claude Code, Codex,
+    Cursor, OpenCode, Kimi Code), using graphify's own installers so the wording stays graphify's.
+
+    graphify's installers also write project hook configs pointing at THIS machine's absolute graphify path. Committed,
+    those break on every other machine, in CI and for collaborators, so they are restored to exactly their previous
+    state. The nudge and auto-update hooks come from crossbrain's global, per-machine install instead."""
+    if not (repo / ".git").is_dir():
+        return "not a git repo"
+    if not graphify_available():
+        return "graphify not installed"
+    results = []
+    for platform, (doc, hook_files) in INSTRUCTION_PLATFORMS.items():
+        snapshots = {}
+        for rel in hook_files:
+            p = repo / rel
+            snapshots[rel] = (p.read_bytes() if p.exists() else None, p.parent.exists())
+        args = [sys.executable, "-m", "graphify", platform, "uninstall" if uninstall else "install"]
+        r = runner(args, repo) if runner else _run_in(args, repo, timeout=120)
+        for rel, (before, parent_existed) in snapshots.items():
+            p = repo / rel
+            after = p.read_bytes() if p.exists() else None
+            if after == before:
+                continue
+            if before is None:
+                p.unlink(missing_ok=True)
+                if not parent_existed and p.parent.exists() and not any(p.parent.iterdir()):
+                    p.parent.rmdir()
+            else:
+                p.write_bytes(before)
+        ok = r.returncode == 0
+        has_section = (repo / doc).exists() and "## graphify" in (repo / doc).read_text(encoding="utf-8", errors="replace")
+        results.append(f"{doc} {'removed' if uninstall and ok else ('ok' if ok and has_section else 'FAILED')}")
+    return ", ".join(results)
+
+
 # ---------------------------------------------------------------- archify
 
 def archify_status(cfg: dict) -> dict:

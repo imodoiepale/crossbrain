@@ -149,7 +149,10 @@ def install(cfg: dict | None = None, dry_run: bool = False, log=print, allow_pip
         for script, args in (("build_capabilities.py", ["--local"]), ("build_brain.py", [])):
             subprocess.run([sys.executable, str(hc.ENGINE / "scripts" / script), *args], check=False)
         if "claude" in cfg["skill_targets"] and hc.expand("~/.claude").exists():
-            subprocess.run([sys.executable, str(hc.ENGINE / "scripts" / "install_brain_hook.py")], check=False)
+            # SessionStart brain card, plus (with graphify) the graph-first nudge and after-edit graph auto-update.
+            r = subprocess.run([sys.executable, str(hc.ENGINE / "scripts" / "claude_hooks.py")],
+                               capture_output=True, text=True, check=False)
+            log("  " + (r.stdout.strip() or r.stderr.strip()[-200:]))
     return report
 
 

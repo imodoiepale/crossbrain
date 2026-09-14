@@ -23,7 +23,9 @@ map of your repos is `<pack>/brain/BRAIN.md`, with `brain.json` for machines.
    `python -m graphify query "<what you are about to build>"`, and `python -m graphify explain "<Node>"` for anything you will
    touch. If `GRAPH_REPORT.md` is older than recent structural commits, run `python -m graphify update .` first (no LLM). A stale
    graph is confidently wrong. Repos with `crossbrain hooks install --graph-only` rebuild their graph after every commit and
-   branch switch. Without a graph, search the codebase. The second copy of a component is where drift starts.
+   branch switch, and in Claude Code it also rebuilds in the background after each edit. **Save tokens: ask the graph before opening files.**
+   A scoped `query` answer is far smaller than the files it replaces. Read files only for what the graph doesn't answer.
+   Without a graph, search the codebase. The second copy of a component is where drift starts.
 6. **Verify.** Run the repo's real build and tests. A type-check is not a test. If there are no tests,
    say so. Don't imply coverage.
 7. **Ship.** Follow `ship`: branch, preflight gate, a commit that says why, and a PR that says what was

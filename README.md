@@ -264,6 +264,8 @@ Agents run them, following the skills. crossbrain makes that hard to skip:
 | Trigger | What happens | Model involved |
 |---|---|---|
 | **Session start** (Claude Code) | The card says whether this repo's graph is **fresh, stale (N commits behind) or missing**, with the exact command to run | none |
+| **Before a file read or search** (Claude Code) | A global hook reminds the agent to ask the graph first (`graphify query`), once per session per repo, and only where a graph exists. It never blocks | none |
+| **After every edit** (Claude Code) | A global hook starts a background, incremental `graphify update .`: at most one run per repo per minute, plus one follow-up pass for edits made during a run. It never blocks and never runs in repos that commit their graph | none |
 | **Every commit / branch switch** | `crossbrain hooks install --graph-only` installs graphify's post-commit/post-checkout hooks, which rebuild the graph in the background | none: code is parsed with tree-sitter |
 | **`crossbrain intake-scan R`** | Rebuilds R's graph before auditing, and reports its freshness | none |
 | **`brain`**, step 5 | The agent runs `graphify query` / `explain` / `path` before writing code | your session's model reads the answers |
@@ -276,7 +278,13 @@ session itself. archify never uses a model: the agent authors a JSON spec, and a
 crossbrain graph status --all                  # fresh / stale / missing for every repo
 crossbrain graph update .                      # rebuild one repo's graph now
 crossbrain hooks install --all --graph-only    # keep every repo's graph fresh (does not add the commit gate)
+crossbrain graph instruct --all                # graph-first rules in every repo's CLAUDE.md + AGENTS.md
 ```
+
+**Per-repo rules and per-machine hooks.** `crossbrain graph instruct` runs graphify's own installers, so each repo's `CLAUDE.md` and `AGENTS.md`
+get graphify's "query the graph first" section, which Claude Code, Codex, Cursor, OpenCode and Kimi Code all read. Anyone who clones the repo
+gets the rules too. graphify's installers also write project hook files that hardcode *this machine's* path to graphify, which would break on
+every other machine and in CI, so crossbrain restores those files exactly. The hooks come from crossbrain's global install on each machine instead.
 
 Graph hooks never modify tracked files:
 - **Repos that commit `graphify-out/` are skipped.** Every background rebuild would change tracked graph files and leave the repo
@@ -448,6 +456,7 @@ Full threat model: **[docs/SECURITY.md](docs/SECURITY.md)**.
 | `crossbrain preflight [--staged] [path]` | The commit gate |
 | `crossbrain hooks install\|uninstall [path\|--all] [--graph-only\|--no-graph] [--tracked-graph]` | The gate as a pre-commit hook, plus graphify hooks that rebuild the code graph on commit and checkout (repos that commit their graph are skipped unless `--tracked-graph`) |
 | `crossbrain graph status\|update [path\|--all]` | Code-graph freshness per repo (fresh, stale by N commits, or missing); rebuild with no LLM |
+| `crossbrain graph instruct [path\|--all] [--uninstall]` | Write graphify's graph-first rules into each repo's `CLAUDE.md` and `AGENTS.md` (no machine-specific hook files) |
 | `crossbrain drift` | Repos whose fixes outran their skill, plus ECC upstream status |
 | `crossbrain shim [--port N]` | Localhost secret-redacting proxy for memory services |
 

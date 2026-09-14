@@ -20,6 +20,7 @@ crossbrain - one brain for every coding agent.
   hooks install|uninstall [path|--all] [--graph-only|--no-graph]
                           the preflight gate (pre-commit) + graphify graph hooks (post-commit/checkout)
   graph status|update [path|--all]       code-graph freshness per repo; rebuild with graphify (no LLM)
+  graph instruct [path|--all] [--uninstall]   write graphify's graph-first rules into each repo's CLAUDE.md + AGENTS.md
   shim [--port N]         the secret-redacting proxy for agent memory services
 """
 
@@ -167,9 +168,22 @@ def hooks_cmd(args: list[str]) -> int:
 
 def graph_cmd(args: list[str]) -> int:
     import components
-    if not args or args[0] not in ("status", "update"):
-        print("usage: crossbrain graph status|update [path|--all]")
+    if not args or args[0] not in ("status", "update", "instruct"):
+        print("usage: crossbrain graph status|update|instruct [path|--all] [--uninstall]")
         return 2
+    if args[0] == "instruct":
+        if not components.graphify_available():
+            print("graphify is not installed - run `crossbrain install --with-graphify`")
+            return 1
+        uninstall = "--uninstall" in args
+        failed = 0
+        for r in target_repos(args[1:]):
+            if r == hc.ENGINE or " - Copy" in r.name:
+                continue
+            res = components.instruct_repo(r, uninstall=uninstall)
+            failed += "FAILED" in res
+            print(f"  {r.name:<40} {res}")
+        return 1 if failed else 0
     available = components.graphify_available()
     if args[0] == "update" and not available:
         print("graphify is not installed - run `crossbrain install --with-graphify`")
