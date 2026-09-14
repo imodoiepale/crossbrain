@@ -278,8 +278,12 @@ crossbrain graph update .                      # rebuild one repo's graph now
 crossbrain hooks install --all --graph-only    # keep every repo's graph fresh (does not add the commit gate)
 ```
 
-Graph hooks never modify tracked files. graphify's merge-driver line in `.gitattributes` is put back unless the repo commits its graph, and
-`graphify-out/` is hidden from `git status` through the local `.git/info/exclude`.
+Graph hooks never modify tracked files:
+- **Repos that commit `graphify-out/` are skipped.** Every background rebuild would change tracked graph files and leave the repo
+  dirty after each commit. Pass `--tracked-graph` to opt in anyway.
+- **`.gitattributes` is always put back.** graphify's merge-driver line is removed again; add it yourself if you want union merges of
+  a committed graph.
+- **`graphify-out/` is hidden from `git status`** through the local `.git/info/exclude`, which is never committed.
 
 ---
 
@@ -442,7 +446,7 @@ Full threat model: **[docs/SECURITY.md](docs/SECURITY.md)**.
 | `crossbrain ecc search\|show\|use\|drop\|list` | Work with the ECC library |
 | `crossbrain intake-scan <repo> \| --all [--summary]` | The deterministic project audit |
 | `crossbrain preflight [--staged] [path]` | The commit gate |
-| `crossbrain hooks install\|uninstall [path\|--all] [--graph-only\|--no-graph]` | The gate as a pre-commit hook, plus graphify hooks that rebuild the code graph on commit and checkout |
+| `crossbrain hooks install\|uninstall [path\|--all] [--graph-only\|--no-graph] [--tracked-graph]` | The gate as a pre-commit hook, plus graphify hooks that rebuild the code graph on commit and checkout (repos that commit their graph are skipped unless `--tracked-graph`) |
 | `crossbrain graph status\|update [path\|--all]` | Code-graph freshness per repo (fresh, stale by N commits, or missing); rebuild with no LLM |
 | `crossbrain drift` | Repos whose fixes outran their skill, plus ECC upstream status |
 | `crossbrain shim [--port N]` | Localhost secret-redacting proxy for memory services |

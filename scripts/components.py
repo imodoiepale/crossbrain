@@ -188,33 +188,39 @@ def update_graph(repo: Path, runner=None, timeout: int = 1800) -> dict:
     return {"ok": True, **graph_status(repo)}
 
 
-def install_graph_hooks(repo: Path, uninstall: bool = False, runner=None) -> str:
+def install_graph_hooks(repo: Path, uninstall: bool = False, runner=None, allow_tracked: bool = False) -> str:
     """graphify's own post-commit/post-checkout hooks rebuild the graph in the background (code only, no LLM).
 
-    graphify also registers a graph.json merge driver by writing .gitattributes. That only helps a repo that commits
-    its graph; for every other repo it would be a surprise change to a tracked file, so it is put back."""
+    Two rules keep them from ever touching a tracked file:
+      - a repo that COMMITS graphify-out/ is skipped unless allow_tracked: every background rebuild would modify
+        tracked graph files and leave the repo dirty after each commit.
+      - graphify registers a graph.json merge driver by writing .gitattributes. That edit is always put back;
+        a repo that wants union merges of its committed graph adds the line itself."""
     if not (repo / ".git").is_dir():
         return "not a git repo"
     if not graphify_available():
         return "graphify not installed"
+    commits_graph = bool(_git(repo, "ls-files", GRAPH_DIR))
+    if commits_graph and not uninstall and not allow_tracked:
+        return ("graph hooks skipped: this repo commits graphify-out/, so rebuilds would dirty tracked files after every "
+                "commit (--tracked-graph to opt in)")
     attrs = repo / ".gitattributes"
     before = attrs.read_bytes() if attrs.exists() else None
-    commits_graph = bool(_git(repo, "ls-files", GRAPH_DIR))
     args = [sys.executable, "-m", "graphify", "hook", "uninstall" if uninstall else "install"]
     r = runner(args, repo) if runner else _run_in(args, repo, timeout=120)
-    if not commits_graph:
-        after = attrs.read_bytes() if attrs.exists() else None
-        if after != before:
-            if before is None:
-                attrs.unlink()
-            else:
-                attrs.write_bytes(before)
+    after = attrs.read_bytes() if attrs.exists() else None
+    if after != before:
+        if before is None:
+            attrs.unlink()
+        else:
+            attrs.write_bytes(before)
     if r.returncode != 0:
         return "graph hooks FAILED: " + ((r.stderr or r.stdout).strip().splitlines() or ["no output"])[-1][:120]
     if uninstall:
+        _git(repo, "config", "--remove-section", "merge.graphify")
         return "graph hooks removed"
     exclude_graph_output(repo)
-    return "graph hooks installed"
+    return "graph hooks installed" + (" (tracked graph: expect graphify-out/ changes after commits)" if commits_graph else "")
 
 
 # ---------------------------------------------------------------- archify

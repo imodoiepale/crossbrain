@@ -150,7 +150,7 @@ def hooks_cmd(args: list[str]) -> int:
     import components
     import install as inst
     if not args or args[0] not in ("install", "uninstall"):
-        print("usage: crossbrain hooks install|uninstall [path|--all] [--graph-only|--no-graph]")
+        print("usage: crossbrain hooks install|uninstall [path|--all] [--graph-only|--no-graph] [--tracked-graph]")
         return 2
     uninstall = args[0] == "uninstall"
     gate = "--graph-only" not in args
@@ -160,7 +160,7 @@ def hooks_cmd(args: list[str]) -> int:
         if gate:
             parts.append("gate " + inst.install_git_hook(r, uninstall))
         if graph:
-            parts.append(components.install_graph_hooks(r, uninstall))
+            parts.append(components.install_graph_hooks(r, uninstall, allow_tracked="--tracked-graph" in args))
         print(f"  {r.name:<40} {' | '.join(parts)}")
     return 0
 

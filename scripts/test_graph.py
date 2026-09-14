@@ -109,13 +109,28 @@ class ExcludeAndHooksTest(RepoCase):
             components.install_graph_hooks(self.repo, runner=self.fake_graphify())
         self.assertFalse((self.repo / ".gitattributes").exists())
 
-    def test_hook_install_keeps_merge_driver_when_graph_is_committed(self):
+    def commit_graph(self):
         report(self.repo, "# Graph Report\n")
         git(self.repo, "add", "-A")
         git(self.repo, "commit", "-qm", "commit graph")
+
+    def test_repo_that_commits_its_graph_is_skipped_by_default(self):
+        # The real rollout: 7 repos committed graphify-out/, and graphify's merge-driver edit was left in each.
+        self.commit_graph()
+        calls = []
         with mock.patch.object(components, "graphify_available", return_value=True):
-            components.install_graph_hooks(self.repo, runner=self.fake_graphify())
-        self.assertIn("merge=graphify", (self.repo / ".gitattributes").read_text(encoding="utf-8"))
+            status = components.install_graph_hooks(self.repo, runner=lambda a, c: calls.append(a))
+        self.assertTrue(status.startswith("graph hooks skipped"), status)
+        self.assertEqual(calls, [], "graphify must not even run")
+        self.assertEqual(git(self.repo, "status", "--porcelain"), "")
+
+    def test_tracked_graph_opt_in_installs_but_never_leaves_gitattributes_changed(self):
+        self.commit_graph()
+        with mock.patch.object(components, "graphify_available", return_value=True):
+            status = components.install_graph_hooks(self.repo, runner=self.fake_graphify(), allow_tracked=True)
+        self.assertIn("graph hooks installed", status)
+        self.assertFalse((self.repo / ".gitattributes").exists())
+        self.assertEqual(git(self.repo, "status", "--porcelain"), "")
 
     def test_without_graphify_nothing_runs(self):
         calls = []
