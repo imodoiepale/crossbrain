@@ -257,6 +257,30 @@ crossbrain doctor                      # shows archify version + Node, graphify 
 `crossbrain doctor` reports both. If graphify isn't installed, crossbrain prints the exact command and carries on. It never pip-installs
 unless you pass `--with-graphify`.
 
+### Who runs them, and with which model
+
+Agents run them, following the skills. crossbrain makes that hard to skip:
+
+| Trigger | What happens | Model involved |
+|---|---|---|
+| **Session start** (Claude Code) | The card says whether this repo's graph is **fresh, stale (N commits behind) or missing**, with the exact command to run | none |
+| **Every commit / branch switch** | `crossbrain hooks install --graph-only` installs graphify's post-commit/post-checkout hooks, which rebuild the graph in the background | none: code is parsed with tree-sitter |
+| **`crossbrain intake-scan R`** | Rebuilds R's graph before auditing, and reports its freshness | none |
+| **`brain`**, step 5 | The agent runs `graphify query` / `explain` / `path` before writing code | your session's model reads the answers |
+| **`project-intake`**, phase 2 | The agent reads `GRAPH_REPORT.md`, writes an archify spec from the graph and code, then renders `architecture.html` | your session's model writes the spec; archify renders it deterministically |
+
+graphify only uses a model to extract **docs, PDFs and images**, never code. It uses Gemini if `GEMINI_API_KEY` is set, and otherwise your agent
+session itself. archify never uses a model: the agent authors a JSON spec, and archify validates and draws it.
+
+```bash
+crossbrain graph status --all                  # fresh / stale / missing for every repo
+crossbrain graph update .                      # rebuild one repo's graph now
+crossbrain hooks install --all --graph-only    # keep every repo's graph fresh (does not add the commit gate)
+```
+
+Graph hooks never modify tracked files. graphify's merge-driver line in `.gitattributes` is put back unless the repo commits its graph, and
+`graphify-out/` is hidden from `git status` through the local `.git/info/exclude`.
+
 ---
 
 ## 🚀 Quick start
@@ -340,7 +364,7 @@ The scanner is deterministic and read-only, and it never prints a secret value:
 
 | Area | Checks |
 |---|---|
-| **Architecture** | stack, layout, API routes, migrations, edge functions, workers, tests, CI, agent docs, code graph |
+| **Architecture** | stack, layout, API routes, migrations, edge functions, workers, tests, CI, agent docs, and a **freshly rebuilt code graph** (`--no-graph` to skip) |
 | **Secrets** | tracked secret files · secret patterns at HEAD **and in git history** · secret-named `NEXT_PUBLIC_`/`VITE_` vars · hardcoded env fallbacks · `.env` not ignored |
 | **Access** | tables vs `ENABLE ROW LEVEL SECURITY` · `SECURITY DEFINER` without `REVOKE` · views without `security_invoker` · JWT decoded but not verified |
 | **Supply chain** | hidden or bidi Unicode in `CLAUDE.md`, `AGENTS.md`, `.mcp.json`, `.claude/`, `.cursor/rules/` |
@@ -418,7 +442,8 @@ Full threat model: **[docs/SECURITY.md](docs/SECURITY.md)**.
 | `crossbrain ecc search\|show\|use\|drop\|list` | Work with the ECC library |
 | `crossbrain intake-scan <repo> \| --all [--summary]` | The deterministic project audit |
 | `crossbrain preflight [--staged] [path]` | The commit gate |
-| `crossbrain hooks install\|uninstall [path\|--all]` | The gate as a git pre-commit hook |
+| `crossbrain hooks install\|uninstall [path\|--all] [--graph-only\|--no-graph]` | The gate as a pre-commit hook, plus graphify hooks that rebuild the code graph on commit and checkout |
+| `crossbrain graph status\|update [path\|--all]` | Code-graph freshness per repo (fresh, stale by N commits, or missing); rebuild with no LLM |
 | `crossbrain drift` | Repos whose fixes outran their skill, plus ECC upstream status |
 | `crossbrain shim [--port N]` | Localhost secret-redacting proxy for memory services |
 

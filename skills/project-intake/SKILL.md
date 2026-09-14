@@ -21,11 +21,13 @@ from it.
 ## Phase 1 — Evidence scan (automated, read-only)
 
 ```bash
-crossbrain intake-scan R > R/docs/intake/AUDIT.md
+crossbrain intake-scan R > R/docs/intake/AUDIT.md      # also builds or refreshes R's code graph (graphify, no LLM)
+crossbrain hooks install R --graph-only                # keep that graph fresh on every commit from now on
 ```
 
 The scan never prints secret values. It checks:
-- **Architecture:** stack, layout, API routes, migrations, edge functions, workers, tests, CI, agent docs, code graph.
+- **Architecture:** stack, layout, API routes, migrations, edge functions, workers, tests, CI, agent docs, and the code graph
+  (rebuilt by the scan and reported as fresh/stale; `--no-graph` skips the rebuild).
 - **Secrets:** secret files tracked in git; secret patterns at HEAD and in history; secret-named `NEXT_PUBLIC_`/`VITE_` variables; hardcoded env fallbacks.
 - **Access:** RLS coverage; `SECURITY DEFINER` functions without a `REVOKE`; views without `security_invoker`; JWTs decoded but never verified.
 - **Agent config:** hidden Unicode in agent instructions.
@@ -36,7 +38,7 @@ report with rotation steps, and to the user **before** you continue.
 
 ## Phase 2 — Architecture map
 
-1. **Code graph (graphify).** Build or refresh the graph, which needs no LLM:
+1. **Code graph (graphify).** Phase 1 already rebuilt it. If the scan reported the graph as failed or skipped, build it yourself (no LLM):
    ```bash
    python -m graphify update R            # writes R/graphify-out/ (graph.json, GRAPH_REPORT.md)
    ```

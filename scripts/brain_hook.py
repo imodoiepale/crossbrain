@@ -1,15 +1,20 @@
 """
-Claude Code SessionStart hook: tell a new session which repo it is in and what that repo already broke.
+Claude Code SessionStart hook: tell a new session which repo it is in, what that repo already broke, and
+whether its code graph can be trusted.
 
-Claude Code sends {"cwd": ...} on stdin. This matches cwd against the brain map and prints the repo
-card as additionalContext. Skills load only when the model opens them; this puts the one card that
-matters in front of it from the first turn, for about 400 tokens.
+Claude Code sends {"cwd": ...} on stdin. This prints a short card as additionalContext. Skills load only when
+the model opens them; this puts the one card that matters in front of it from the first turn.
 
-It also keeps this machine's `capabilities` index current, and names skills you added by hand that
+  - a repo with a repo-* skill      -> its card: defect classes, non-negotiables, verify commands, graph status
+  - any other git repo              -> a short card: no skill yet (run project-intake), graph status
+  - the projects root               -> how many repos are mapped
+  - anything else                   -> nothing
+
+It also keeps this machine's `capabilities` index current, and names skills added by hand that
 `crossbrain sync` has not shared yet.
 
-Fails open: missing brain, bad JSON, unknown directory -> no output, exit 0. A hook that breaks session
-start gets switched off, and then it protects nothing.
+Fails open: missing brain, bad JSON, unknown directory, git or graphify errors -> no output or a shorter card,
+exit 0. A hook that breaks session start gets switched off, and then it protects nothing.
 """
 
 from __future__ import annotations
@@ -21,7 +26,6 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import hconfig as hc  # noqa: E402
-import hconfig as hc
 
 
 def match(cwd: str, repos: list[dict], root: Path) -> dict | None:
@@ -32,6 +36,24 @@ def match(cwd: str, repos: list[dict], root: Path) -> dict | None:
         if (c == p or c.startswith(p + "\\") or c.startswith(p + "/")) and len(p) > best_len:
             best, best_len = r, len(p)
     return best
+
+
+def repo_root(cwd: str) -> Path | None:
+    p = Path(cwd)
+    for candidate in (p, *p.parents):
+        if (candidate / ".git").exists():
+            return candidate
+    return None
+
+
+def graph_hint(repo: Path | None, cfg: dict) -> str | None:
+    if repo is None or "graphify" not in cfg.get("components", []):
+        return None
+    try:
+        import components
+        return components.graph_line(components.graph_status(repo), components.graphify_available())
+    except Exception:
+        return None
 
 
 def card(r: dict, brain: dict) -> str:
@@ -81,22 +103,35 @@ def main():
     try:
         event = json.load(sys.stdin)
         cfg = hc.load()
-        brain = json.loads((hc.brain_dir(cfg) / "brain.json").read_text(encoding="utf-8"))
     except (OSError, ValueError):
         return
+    try:
+        brain = json.loads((hc.brain_dir(cfg) / "brain.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        brain = {"repos": []}
     pending = refresh_capabilities(cfg)
     root = hc.projects_root(cfg)
     cwd = event.get("cwd", "")
-    r = match(cwd, brain.get("repos", []), root)
+    r = match(cwd, brain.get("repos", []), root) if cwd else None
+    git_root = repo_root(cwd) if cwd else None
+
     if r:
         text = card(r, brain)
+        hint = graph_hint(root / r["repo"], cfg)
+    elif git_root is not None:
+        text = (f"[crossbrain] {git_root.name} has no repo skill yet. If it is unfamiliar, run `project-intake` before the "
+                "first change; `capabilities` indexes every tool available.")
+        hint = graph_hint(git_root, cfg)
     elif cwd and Path(cwd).resolve() == root.resolve():
         text = (f"[crossbrain] Projects root: {len(brain['repos'])} repos mapped. Load `brain` to route to the right "
                 "repo skill, and `capabilities` for everything else.")
+        hint = None
     elif pending:
-        text = "[crossbrain]"
+        text, hint = "[crossbrain]", None
     else:
         return
+    if hint:
+        text += "\n" + hint
     if pending:
         text += (f"\nSkills added by hand on this machine, not yet shared: {', '.join(pending)}. "
                  "`crossbrain sync` adopts them (scanned) into your brain pack.")

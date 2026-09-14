@@ -18,6 +18,7 @@ import argparse
 import json
 import re
 import subprocess
+import sys
 import time
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
@@ -82,9 +83,17 @@ def read(p: Path, limit: int = 1_000_000) -> str:
         return ""
 
 
-def audit(repo: Path, patterns, history: bool = True) -> Report:
+def audit(repo: Path, patterns, history: bool = True, graph: bool = False, log=None) -> Report:
     rep = Report(repo=repo.name, path=str(repo))
     add = rep.findings.append
+    graph_info: dict = {}
+    if graph:
+        # Rebuild the code graph first (graphify, code only, no LLM) so the intake starts from current structure.
+        import components
+        if log:
+            log(f"rebuilding code graph for {repo.name} (graphify update, no LLM) ...")
+        res = components.update_graph(repo)
+        graph_info = {**res, "rebuilt": res.get("ok", False)}
     files = [f for f in git(repo, "ls-files").splitlines() if f]
     text_files = [f for f in files if not SKIP_DIRS.search(f) and
                   (Path(f).suffix.lower() in TEXT_EXT or Path(f).name.startswith(".env"))]
@@ -139,7 +148,7 @@ def audit(repo: Path, patterns, history: bool = True) -> Report:
         "test_files": len(tests), "ci_workflows": [Path(c).name for c in ci],
         "scripts": list(pkg.get("scripts", {}).keys())[:20],
         "agent_docs": [f for f in files if Path(f).name in ("CLAUDE.md", "AGENTS.md")][:5],
-        "code_graph": (repo / "graphify-out" / "GRAPH_REPORT.md").exists(),
+        "code_graph": graph_info or {**__import__("components").graph_status(repo), "rebuilt": False},
     }
 
     # ---------------------------------------------------------------- security
@@ -300,6 +309,21 @@ def history_secrets(repo: Path, patterns, max_bytes: int = 150_000_000, max_seco
     return found
 
 
+def graph_summary(g) -> str:
+    if isinstance(g, bool):                       # reports produced before graph status existed
+        return "yes" if g else "no"
+    if not g:
+        return "unknown"
+    if g.get("rebuilt"):
+        return f"rebuilt now ({g.get('status', 'fresh')}) - read graphify-out/GRAPH_REPORT.md"
+    if g.get("error"):
+        return f"rebuild FAILED ({g['error']}) - run `python -m graphify update .`"
+    s = g.get("status")
+    if s == "stale":
+        return f"stale ({g['behind']} commits behind)" if g.get("behind") else "stale"
+    return s or "unknown"
+
+
 def render(reps: list[Report], summary: bool = False) -> str:
     """summary=True: scores and finding counts only, no file:line evidence. That is the form safe to
     commit - a full evidence table is a map of where every credential lives (see .gitignore creds.csv)."""
@@ -333,7 +357,7 @@ def render(reps: list[Report], summary: bool = False) -> str:
                   f"{len(a['edge_functions'])} edge functions", f"{a['test_files']} test files",
                   f"CI: {', '.join(a['ci_workflows']) or 'none'}",
                   f"agent docs: {', '.join(a['agent_docs']) or 'none'}",
-                  f"code graph: {'yes' if a['code_graph'] else 'no'}"]), ""]
+                  f"code graph: {graph_summary(a.get('code_graph'))}"]), ""]
         if r.findings:
             L += ["| Sev | Finding | Lesson | Evidence |", "|---|---|---|---|"]
             order = ["critical", "high", "medium", "low"]
@@ -356,7 +380,11 @@ def main():
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--summary", action="store_true", help="scores and counts only - safe to commit")
     ap.add_argument("--out")
+    # One repo: rebuild its code graph by default. --all: opt in, since rebuilding every repo's graph is slow.
+    ap.add_argument("--graph", action="store_true", help="rebuild code graphs with graphify first (default for one repo)")
+    ap.add_argument("--no-graph", action="store_true", help="never rebuild code graphs")
     a = ap.parse_args()
+    rebuild = not a.no_graph and (a.graph or not a.all)
     patterns = shim.load_patterns()
     if a.all:
         repos = [p for p in sorted(Path(a.root).iterdir()) if (p / ".git").exists() and " - Copy" not in p.name]
@@ -368,7 +396,9 @@ def main():
         ap.error("give a repo path or --all")
     reps = []
     for p in repos:
-        reps.append(audit(p, patterns, history=not a.no_history))
+        # progress goes to stderr, so `intake-scan R > AUDIT.md` stays a clean report
+        reps.append(audit(p, patterns, history=not a.no_history, graph=rebuild,
+                          log=lambda m: print(m, file=sys.stderr, flush=True)))
         print(f"audited {p.name}: {reps[-1].score}/100", flush=True) if a.out else None
     out = json.dumps([{**asdict(r), "score": r.score, "band": r.band} for r in reps], indent=2) if a.json else render(reps, summary=a.summary)
     if a.out:

@@ -17,7 +17,9 @@ crossbrain - one brain for every coding agent.
   adopt [--dry-run]       adopt hand-added skills into your primary pack
   ecc search|show|use|drop|list    work with the vendored ECC library
   preflight [--staged] [path]      the commit gate
-  hooks install|uninstall [path|--all]   the gate as a git pre-commit hook
+  hooks install|uninstall [path|--all] [--graph-only|--no-graph]
+                          the preflight gate (pre-commit) + graphify graph hooks (post-commit/checkout)
+  graph status|update [path|--all]       code-graph freshness per repo; rebuild with graphify (no LLM)
   shim [--port N]         the secret-redacting proxy for agent memory services
 """
 
@@ -136,20 +138,54 @@ def config_cmd(args: list[str]) -> int:
     return 0
 
 
-def hooks_cmd(args: list[str]) -> int:
-    import install as inst
-    if not args or args[0] not in ("install", "uninstall"):
-        print("usage: crossbrain hooks install|uninstall [path|--all]")
-        return 2
-    uninstall = args[0] == "uninstall"
+def target_repos(args: list[str]) -> list[Path]:
     if "--all" in args:
         root = hc.projects_root()
-        repos = [p for p in sorted(root.iterdir()) if (p / ".git").is_dir()] if root.exists() else []
-    else:
-        repos = [Path(args[1] if len(args) > 1 else ".").resolve()]
-    for r in repos:
-        print(f"  {inst.install_git_hook(r, uninstall):<22} {r}")
+        return [p for p in sorted(root.iterdir()) if (p / ".git").is_dir()] if root.exists() else []
+    paths = [a for a in args if not a.startswith("--")]
+    return [Path(paths[0] if paths else ".").resolve()]
+
+
+def hooks_cmd(args: list[str]) -> int:
+    import components
+    import install as inst
+    if not args or args[0] not in ("install", "uninstall"):
+        print("usage: crossbrain hooks install|uninstall [path|--all] [--graph-only|--no-graph]")
+        return 2
+    uninstall = args[0] == "uninstall"
+    gate = "--graph-only" not in args
+    graph = "--no-graph" not in args and "graphify" in hc.load().get("components", [])
+    for r in target_repos(args[1:]):
+        parts = []
+        if gate:
+            parts.append("gate " + inst.install_git_hook(r, uninstall))
+        if graph:
+            parts.append(components.install_graph_hooks(r, uninstall))
+        print(f"  {r.name:<40} {' | '.join(parts)}")
     return 0
+
+
+def graph_cmd(args: list[str]) -> int:
+    import components
+    if not args or args[0] not in ("status", "update"):
+        print("usage: crossbrain graph status|update [path|--all]")
+        return 2
+    available = components.graphify_available()
+    if args[0] == "update" and not available:
+        print("graphify is not installed - run `crossbrain install --with-graphify`")
+        return 1
+    failed = 0
+    for r in target_repos(args[1:]):
+        if args[0] == "update":
+            print(f"  updating {r.name} ...", flush=True)
+            res = components.update_graph(r)
+            failed += not res["ok"]
+            print(f"  {r.name:<40} {'ok ' + res.get('status', '') if res['ok'] else 'FAILED: ' + res['error']}")
+        else:
+            st = components.graph_status(r)
+            detail = f"{st['behind']} behind" if st.get("behind") else st.get("built_from") or st.get("built_on") or ""
+            print(f"  {st['status']:<8} {r.name:<40} {detail}")
+    return 1 if failed else 0
 
 
 def main(argv: list[str]) -> int:
@@ -186,6 +222,8 @@ def main(argv: list[str]) -> int:
         return config_cmd(rest)
     if cmd == "hooks":
         return hooks_cmd(rest)
+    if cmd == "graph":
+        return graph_cmd(rest)
     print(f"unknown command '{cmd}'\n{__doc__}")
     return 2
 

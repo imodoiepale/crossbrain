@@ -61,3 +61,18 @@ jobs:
           python crossbrain.py install --with-graphify
           test -f "$HOME/.claude/skills/graphify/SKILL.md"
           python crossbrain.py doctor | grep -E "\+ graphify"
+          # graphs stay fresh: graph-only hooks rebuild on commit, and never dirty the repo
+          R="$RUNNER_TEMP/graph-repo"; mkdir -p "$R" && cd "$R"
+          git init -q -b main && git config user.email ci@ci && git config user.name ci
+          printf 'def add(a, b):\n    return a + b\n' > m.py && git add -A && git commit -qm init
+          python "$GITHUB_WORKSPACE/crossbrain.py" graph status . | grep -q missing
+          python "$GITHUB_WORKSPACE/crossbrain.py" hooks install . --graph-only | grep -q "graph hooks installed"
+          test -f .git/hooks/post-commit && test ! -f .git/hooks/pre-commit
+          python "$GITHUB_WORKSPACE/crossbrain.py" graph update . | grep -q ok
+          test -f graphify-out/GRAPH_REPORT.md
+          test -z "$(git status --porcelain)"
+          python "$GITHUB_WORKSPACE/crossbrain.py" graph status . | grep -qE "^\s+fresh"
+          printf 'def sub(a, b):\n    return a - b\n' >> m.py && git commit -qam two
+          python "$GITHUB_WORKSPACE/crossbrain.py" graph status .
+          python "$GITHUB_WORKSPACE/crossbrain.py" intake-scan . > "$RUNNER_TEMP/audit.md"
+          grep -q "code graph: rebuilt now" "$RUNNER_TEMP/audit.md"

@@ -15,6 +15,8 @@ Neither tool can fail an install: a problem is reported, and everything else pro
 from __future__ import annotations
 
 import importlib.util
+import os
+import re
 import shutil
 import subprocess
 import sys
@@ -93,6 +95,126 @@ def install_graphify(cfg: dict, log=print, allow_pip: bool = False, runner=run) 
     log(f"  graphify {graphify_version()} -> {', '.join(ok) or 'no agent CLIs found'}"
         + (f"  (FAILED: {', '.join(bad)} - run `python -m graphify install --platform <p>`)" if bad else ""))
     return report
+
+
+# ---------------------------------------------------------------- code graphs per repo
+
+GRAPH_DIR = "graphify-out"
+
+
+def _git(repo: Path, *args: str, timeout: int = 60) -> str:
+    try:
+        r = subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True, encoding="utf-8",
+                           errors="replace", timeout=timeout)
+    except (OSError, subprocess.TimeoutExpired):
+        return ""
+    return r.stdout.strip() if r.returncode == 0 else ""
+
+
+def _run_in(args: list[str], cwd: Path, timeout: int = 1800) -> subprocess.CompletedProcess:
+    # PYTHONHASHSEED=0 matches graphify's own hooks: louvain clustering is otherwise non-deterministic run to run.
+    return subprocess.run(args, cwd=str(cwd), capture_output=True, text=True, encoding="utf-8", errors="replace",
+                          timeout=timeout, env={**os.environ, "PYTHONHASHSEED": "0"})
+
+
+def graph_status(repo: Path) -> dict:
+    """missing | fresh | stale. Graphs built by recent graphify record `Built from commit: <sha>`, so staleness is an
+    exact commit count; older reports only carry a date in their title, compared with the last commit date."""
+    report = repo / GRAPH_DIR / "GRAPH_REPORT.md"
+    if not report.exists():
+        return {"status": "missing"}
+    with open(report, encoding="utf-8", errors="replace") as f:
+        head = f.read(4000)
+    built = re.search(r"Built from commit:\s*`?([0-9a-f]{7,40})`?", head)
+    if built:
+        sha = built.group(1)
+        behind = _git(repo, "rev-list", "--count", f"{sha}..HEAD")
+        if behind.isdigit():
+            n = int(behind)
+            return {"status": "fresh" if n == 0 else "stale", "built_from": sha[:8], "behind": n}
+        return {"status": "stale", "built_from": sha[:8], "behind": None}      # commit gone (rebase, shallow clone)
+    dated = re.search(r"\((\d{4}-\d{2}-\d{2})\)", head.splitlines()[0] if head else "")
+    last = _git(repo, "log", "-1", "--format=%cs")
+    if dated and last:
+        return {"status": "fresh" if dated.group(1) >= last else "stale", "built_on": dated.group(1), "behind": None}
+    return {"status": "stale", "behind": None}
+
+
+def graph_line(status: dict, available: bool) -> str:
+    """One line for session cards and audit reports."""
+    if not available:
+        return "Code graph: graphify not installed - `crossbrain install --with-graphify`, then `python -m graphify update .`."
+    s = status.get("status")
+    if s == "fresh":
+        return ("Code graph: fresh. Before writing code, ask it: `python -m graphify query \"<question>\"` "
+                "(also `explain \"<Node>\"`, `path \"<A>\" \"<B>\"`).")
+    if s == "stale":
+        lag = f"{status['behind']} commit(s) behind HEAD" if status.get("behind") else \
+              f"older than the latest commit (built {status.get('built_from') or status.get('built_on', '?')})"
+        return (f"Code graph: STALE - {lag}. Run `python -m graphify update .` (no LLM) before trusting it; "
+                "`crossbrain hooks install . --graph-only` keeps it fresh on every commit.")
+    return ("Code graph: none yet. Run `python -m graphify update .` (no LLM) to build graphify-out/, then query it "
+            "before writing code.")
+
+
+def exclude_graph_output(repo: Path) -> bool:
+    """Keep graphify-out/ out of `git status` without touching any tracked file: .git/info/exclude is local-only.
+    Skipped when the repo deliberately commits its graph."""
+    if not (repo / ".git").is_dir() or _git(repo, "ls-files", GRAPH_DIR):
+        return False
+    exclude = repo / ".git" / "info" / "exclude"
+    exclude.parent.mkdir(parents=True, exist_ok=True)
+    text = exclude.read_text(encoding="utf-8", errors="replace") if exclude.exists() else ""
+    if any(line.strip().strip("/") == GRAPH_DIR for line in text.splitlines()):
+        return False
+    with open(exclude, "a", encoding="utf-8", newline="\n") as f:
+        f.write(("\n" if text and not text.endswith("\n") else "")
+                + f"# crossbrain: local code graph (graphify), rebuilt by git hooks\n{GRAPH_DIR}/\n")
+    return True
+
+
+def update_graph(repo: Path, runner=None, timeout: int = 1800) -> dict:
+    if not graphify_available():
+        return {"ok": False, "error": "graphify not installed"}
+    exclude_graph_output(repo)
+    args = [sys.executable, "-m", "graphify", "update", "."]
+    try:
+        r = runner(args, repo) if runner else _run_in(args, repo, timeout=timeout)
+    except subprocess.TimeoutExpired:
+        return {"ok": False, "error": f"timed out after {timeout}s"}
+    if r.returncode != 0:
+        tail = (r.stderr or r.stdout).strip().splitlines()[-1:] or ["no output"]
+        return {"ok": False, "error": tail[0][:200]}
+    return {"ok": True, **graph_status(repo)}
+
+
+def install_graph_hooks(repo: Path, uninstall: bool = False, runner=None) -> str:
+    """graphify's own post-commit/post-checkout hooks rebuild the graph in the background (code only, no LLM).
+
+    graphify also registers a graph.json merge driver by writing .gitattributes. That only helps a repo that commits
+    its graph; for every other repo it would be a surprise change to a tracked file, so it is put back."""
+    if not (repo / ".git").is_dir():
+        return "not a git repo"
+    if not graphify_available():
+        return "graphify not installed"
+    attrs = repo / ".gitattributes"
+    before = attrs.read_bytes() if attrs.exists() else None
+    commits_graph = bool(_git(repo, "ls-files", GRAPH_DIR))
+    args = [sys.executable, "-m", "graphify", "hook", "uninstall" if uninstall else "install"]
+    r = runner(args, repo) if runner else _run_in(args, repo, timeout=120)
+    if not commits_graph:
+        after = attrs.read_bytes() if attrs.exists() else None
+        if after != before:
+            if before is None:
+                attrs.unlink()
+            else:
+                attrs.write_bytes(before)
+    if r.returncode != 0:
+        return "graph hooks FAILED: " + ((r.stderr or r.stdout).strip().splitlines() or ["no output"])[-1][:120]
+    if uninstall:
+        return "graph hooks removed"
+    exclude_graph_output(repo)
+    return "graph hooks installed"
 
 
 # ---------------------------------------------------------------- archify
