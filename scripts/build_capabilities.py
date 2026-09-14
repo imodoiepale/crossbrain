@@ -229,7 +229,7 @@ def main():
         for target in hc.skill_target_dirs():
             dest = target / "capabilities" / "SKILL.md"
             dest.parent.mkdir(parents=True, exist_ok=True)
-            dest.write_text(text, encoding="utf-8", newline="\n")
+            hc.write_text_lf(dest, text)
             print(f"capabilities (local) -> {dest}")
         return
     text = build()
@@ -241,7 +241,7 @@ def main():
         print("capabilities catalogue is current")
         return
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(text, encoding="utf-8", newline="\n")
+    hc.write_text_lf(OUT, text)
     print(f"capabilities: {text.count(chr(10))} lines -> {OUT.relative_to(ROOT)}")
 
 

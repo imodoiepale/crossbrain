@@ -89,7 +89,7 @@ def upsert_block(path: Path, block: str) -> str:
     if new == text:
         return "unchanged"
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(new, encoding="utf-8", newline="\n")
+    hc.write_text_lf(path, new)
     return "updated" if text else "created"
 
 
@@ -170,6 +170,6 @@ def install_git_hook(repo: Path, uninstall: bool = False) -> str:
         return "already installed"
     if hook.exists():
         hook.rename(backup)
-    hook.write_text(HOOK.format(script=(hc.ENGINE / "scripts" / "preflight.py").as_posix()), encoding="utf-8", newline="\n")
+    hc.write_text_lf(hook, HOOK.format(script=(hc.ENGINE / "scripts" / "preflight.py").as_posix()))
     hook.chmod(0o755)
     return "installed" + (" (previous hook kept as pre-commit.crossbrain-backup)" if backup.exists() else "")

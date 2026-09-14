@@ -124,14 +124,14 @@ def adopt(user_skills: Path | None = None, repo_skills: Path | None = None, mani
             # First excluded folder on each path only - a `dist` nested inside node_modules is not a skill folder.
             excluded = sorted({next(part for part in p.relative_to(skill).parts if part in EXCLUDE_PARTS)
                                for p in skill.rglob("*") if set(p.relative_to(skill).parts) & EXCLUDE_PARTS})
-            (dest / ".adopted.json").write_text(json.dumps({
+            hc.write_text_lf(dest / ".adopted.json", json.dumps({
                 "source": f"~/{skill.parent.parent.name}/{skill.parent.name}/{skill.name}",
                 "adopted": today or datetime.date.today().isoformat(),
                 "files": len(files),
                 "excluded": excluded,
                 "license": fm.get("license", "unspecified"),
                 "restore_dependencies": (skill / "package-lock.json").exists() or (skill / "requirements.txt").exists(),
-            }, indent=2) + "\n", encoding="utf-8", newline="\n")
+            }, indent=2) + "\n")
         result["adopted"].append(skill.name)
     return result
 

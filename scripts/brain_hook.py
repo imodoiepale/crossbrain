@@ -21,6 +21,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import hconfig as hc  # noqa: E402
+import hconfig as hc
 
 
 def match(cwd: str, repos: list[dict], root: Path) -> dict | None:
@@ -65,7 +66,7 @@ def refresh_capabilities(cfg: dict) -> list[str]:
             text = bc.build(local=True, extra_roots=tuple(r for r in hc.skill_roots(cfg)[1:]))
             for t in targets:
                 (t / "capabilities").mkdir(parents=True, exist_ok=True)
-                (t / "capabilities" / "SKILL.md").write_text(text, encoding="utf-8", newline="\n")
+                hc.write_text_lf(t / "capabilities" / "SKILL.md", text)
             state.write_text(fp, encoding="utf-8")
         pack = hc.primary_pack(cfg)
         if not pack:

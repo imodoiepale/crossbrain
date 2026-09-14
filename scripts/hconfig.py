@@ -71,7 +71,7 @@ def load() -> dict:
 
 def save(cfg: dict) -> None:
     HOME.mkdir(parents=True, exist_ok=True)
-    CONFIG.write_text(json.dumps(cfg, indent=2) + "\n", encoding="utf-8", newline="\n")
+    write_text_lf(CONFIG, json.dumps(cfg, indent=2) + "\n")
 
 
 def packs(cfg: dict | None = None) -> list[Path]:
@@ -110,3 +110,10 @@ def state_dir() -> Path:
 
 def skill_target_dirs(cfg: dict | None = None) -> list[Path]:
     return [expand(SKILL_TARGETS[t]) for t in (cfg or load())["skill_targets"] if t in SKILL_TARGETS]
+
+
+def write_text_lf(path, text: str, newline: str | None = "\n", encoding: str = "utf-8") -> None:
+    """Write text with a fixed line ending. Path.write_text's newline= keyword needs Python 3.10;
+    this works on 3.9+. LF by default, so generated files are byte-identical on Windows and in CI."""
+    with open(path, "w", encoding=encoding, newline=newline) as f:
+        f.write(text)

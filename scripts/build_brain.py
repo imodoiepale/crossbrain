@@ -140,8 +140,8 @@ def main():
     brain, md = build(hc.skill_roots(cfg))
     out = hc.brain_dir(cfg)
     out.mkdir(parents=True, exist_ok=True)
-    (out / "brain.json").write_text(json.dumps(brain, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
-    (out / "BRAIN.md").write_text(md + "\n", encoding="utf-8", newline="\n")
+    hc.write_text_lf(out / "brain.json", json.dumps(brain, indent=2, ensure_ascii=False) + "\n")
+    hc.write_text_lf(out / "BRAIN.md", md + "\n")
     repos = brain["repos"]
     print(f"brain: {len(repos)} repos, {len(brain['lessons'])} lessons, "
           f"{sum(r['exposure'] for r in repos)} with exposure notes -> {out}")

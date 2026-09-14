@@ -40,6 +40,7 @@ import tempfile
 from pathlib import Path
 
 import memory_redact_shim as shim
+import hconfig as hc
 
 URL = "https://github.com/affaan-m/ecc"
 ROOT = Path(__file__).resolve().parent.parent
@@ -79,7 +80,7 @@ def load_active() -> dict:
 def save_active(active: dict) -> None:
     ACTIVE_FILE.parent.mkdir(parents=True, exist_ok=True)
     data = {k: sorted(set(v)) for k, v in active.items()}
-    ACTIVE_FILE.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8", newline="\n")
+    hc.write_text_lf(ACTIVE_FILE, json.dumps(data, indent=2) + "\n")
 
 
 def rename(text: str, new: str) -> str:
@@ -112,9 +113,9 @@ def activate_skill(name: str, sha: str, vendor: Path = VENDOR, root: Path = ROOT
         shutil.rmtree(dest)
     shutil.copytree(src, dest)
     md = dest / "SKILL.md"
-    md.write_text(with_note(rename(md.read_text(encoding="utf-8"), f"ecc-{name}"), sha), encoding="utf-8", newline="\n")
+    hc.write_text_lf(md, with_note(rename(md.read_text(encoding="utf-8"), f"ecc-{name}"), sha))
     for doc in dest.rglob("*.md"):
-        doc.write_text(defuse_dead_links(doc.read_text(encoding="utf-8"), doc.parent), encoding="utf-8", newline="\n")
+        hc.write_text_lf(doc, defuse_dead_links(doc.read_text(encoding="utf-8"), doc.parent))
     return dest
 
 
@@ -124,7 +125,7 @@ def activate_agent(name: str, sha: str, vendor: Path = VENDOR, root: Path = ROOT
         raise SystemExit(f"no ECC agent named '{name}' in {vendor / 'agents'}")
     dest = root / "agents" / f"ecc-{name}.md"
     dest.parent.mkdir(exist_ok=True)
-    dest.write_text(with_note(rename(src.read_text(encoding="utf-8"), f"ecc-{name}"), sha), encoding="utf-8", newline="\n")
+    hc.write_text_lf(dest, with_note(rename(src.read_text(encoding="utf-8"), f"ecc-{name}"), sha))
     return dest
 
 
@@ -179,8 +180,7 @@ def main():
                 shutil.copytree(src / s, stage / s, ignore=shutil.ignore_patterns("node_modules", "__pycache__", ".DS_Store"))
         shutil.copy2(src / "LICENSE", stage / "LICENSE")
         for doc in stage.rglob("*.md"):
-            doc.write_text(defuse_dead_links(doc.read_text(encoding="utf-8", errors="replace"), doc.parent),
-                           encoding="utf-8", newline="\n")
+            hc.write_text_lf(doc, defuse_dead_links(doc.read_text(encoding="utf-8", errors="replace"), doc.parent))
         staged = [p for p in stage.rglob("*") if p.is_file()]
         blocking = scan(staged, shim.load_patterns(), stage)
         if blocking:
@@ -194,8 +194,7 @@ def main():
             shutil.rmtree(VENDOR)
         shutil.copytree(stage, VENDOR)
         counts = {s: len([d for d in (VENDOR / s).iterdir()]) if (VENDOR / s).exists() else 0 for s in SURFACES}
-        ORIGIN.write_text(json.dumps({"url": URL, "commit": ref, "license": "MIT", "surfaces": counts}, indent=2) + "\n",
-                          encoding="utf-8", newline="\n")
+        hc.write_text_lf(ORIGIN, json.dumps({"url": URL, "commit": ref, "license": "MIT", "surfaces": counts}, indent=2) + "\n")
 
         # 3. Rebuild the active tier from the list.
         for old in (ROOT / "skills").glob("ecc-*"):
@@ -214,7 +213,7 @@ def main():
             else:
                 missing.append(f"agent {name}")
         save_active(active)
-        (ROOT / "agents" / "ECC-LICENSE").write_text((VENDOR / "LICENSE").read_text(encoding="utf-8"), encoding="utf-8", newline="\n")
+        hc.write_text_lf(ROOT / "agents" / "ECC-LICENSE", (VENDOR / "LICENSE").read_text(encoding="utf-8"))
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 
