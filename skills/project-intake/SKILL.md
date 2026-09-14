@@ -36,11 +36,21 @@ report with rotation steps, and to the user **before** you continue.
 
 ## Phase 2 — Architecture map
 
-1. If a code graph tool is available, build or refresh the graph and read its report: god nodes, clusters, cycles.
-2. Follow **`ecc-codebase-onboarding`**: entry points, request lifecycle, data flow and directory map, taken from the code, not the README.
-3. Brief the **`ecc-architect`** agent with the map. Ask for boundary violations, duplicated responsibilities and scaling limits.
+1. **Code graph (graphify).** Build or refresh the graph, which needs no LLM:
+   ```bash
+   python -m graphify update R            # writes R/graphify-out/ (graph.json, GRAPH_REPORT.md)
+   ```
+   Read `R/graphify-out/GRAPH_REPORT.md` for god nodes, communities and cycles. Answer structural questions from the graph
+   before grepping: `python -m graphify query "where is auth enforced"`, `python -m graphify explain "<Node>"`,
+   `python -m graphify path "<A>" "<B>"`. If graphify is missing, note it under *Not verified* and suggest
+   `crossbrain install --with-graphify`.
+2. Follow **`ecc-codebase-onboarding`**: entry points, request lifecycle, data flow and directory map, taken from the code (and the graph), not the README.
+3. Brief the **`ecc-architect`** agent with the map and `GRAPH_REPORT.md`. Ask for boundary violations, duplicated responsibilities and scaling limits.
 4. Record each load-bearing decision (auth model, tenancy, sync strategy) as an ADR with **`ecc-architecture-decision-records`**.
-5. Draw one Mermaid diagram of the runtime: clients, API, database, workers and third parties.
+5. **Architecture diagram (archify).** Use the **`archify`** skill to render the runtime as a validated architecture diagram:
+   clients, API, database, workers and third parties, with every node taken from the evidence above. Save it as
+   `R/docs/intake/architecture.html`. Add a sequence diagram for the most critical request path if it clarifies auth or payments.
+   If Node 18+ is unavailable, fall back to one Mermaid diagram in the report and note that archify could not run.
 
 ## Phase 3 — Security audit (in order)
 
@@ -82,7 +92,7 @@ Write `R/docs/intake/YYYY-MM-DD-INTAKE.md`:
 # <Repo> intake — <date>
 ## Verdict        band + score, the answer to the acceptance question
 ## Stop-the-line  critical findings with rotation/removal steps (or "none")
-## Architecture   map, Mermaid diagram, ADRs written
+## Architecture   map, graph findings (GRAPH_REPORT.md), archify diagram link, ADRs written
 ## Security       findings by severity: evidence (file:line / commit), impact, fix
 ## Defect classes each as yes / no / unknown
 ## Production     lens scores, launch blockers

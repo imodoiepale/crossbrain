@@ -18,8 +18,10 @@ map of your repos is `<pack>/brain/BRAIN.md`, with `brain.json` for machines.
    and follow it before writing anything from scratch.
 3. **Intake.** One paragraph: what, why, and **how we will know it is done**. Ask if that is unclear.
 4. **Unfamiliar project?** Run `project-intake` before the first change.
-5. **Reuse.** Search the codebase (and its code graph, if one exists) before writing. The second copy of
-   a component is where drift starts.
+5. **Reuse.** Ask the code graph before writing. If the repo has `graphify-out/`, run
+   `python -m graphify query "<what you are about to build>"`, and `python -m graphify explain "<Node>"` for anything you will
+   touch. If `GRAPH_REPORT.md` is older than recent structural commits, run `python -m graphify update .` first (no LLM). A stale
+   graph is confidently wrong. Without a graph, search the codebase. The second copy of a component is where drift starts.
 6. **Verify.** Run the repo's real build and tests. A type-check is not a test. If there are no tests,
    say so. Don't imply coverage.
 7. **Ship.** Follow `ship`: branch, preflight gate, a commit that says why, and a PR that says what was
@@ -35,7 +37,8 @@ map of your repos is `<pack>/brain/BRAIN.md`, with `brain.json` for machines.
 | Engine skills | `brain`, `capabilities`, `project-intake`, `ship`, `retro`, `history-to-skills`, active ECC skills | crossbrain |
 | Repo `AGENTS.md` / `CLAUDE.md` | Rules that must be enforced inside that repo, for any agent | `retro` |
 | Agent memory | Transferable preferences | `retro` |
-| Code graph (optional) | Structure: what calls what, and what breaks if this changes | graph tooling |
+| Code graph (`graphify-out/`) | Structure: what calls what, and what breaks if this changes | `python -m graphify update .` (graphify, installed by crossbrain) |
+| Diagrams (`docs/*.html`) | Validated architecture, sequence, data-flow and state diagrams | the `archify` skill (bundled with crossbrain) |
 
 **Routing a lesson:** is it specific to one repo? Put it in that repo's `AGENTS.md` and its `repo-*` skill. Did it show up in a second repo?
 Promote it to the lessons skill. Is it a preference? Save it to memory. Is it a structural change? Refresh the graph.

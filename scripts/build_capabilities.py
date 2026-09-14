@@ -105,14 +105,17 @@ def build(root: Path = ROOT, local: bool = False, user_skills: Path = USER_SKILL
         if (root / "vendor" / "ecc-active.json").exists() else {"skills": [], "agents": []}
 
     merged: dict[str, tuple[str, Path]] = {}
-    for folder in (skills_dir, *extra_roots):          # later roots (brain packs) override the engine
+    # engine skills, then bundled tools vendored as skill folders (archify), then brain packs (which override both)
+    for folder in (skills_dir, root / "vendor", *[r for r in extra_roots if r != root / "vendor"]):
         for n, d in read_items(folder, "*"):
             merged[n] = (d, folder)
     own = [(n, v[0]) for n, v in sorted(merged.items()) if n != "capabilities"]
     repo_skills = [n for n, _ in own if n.startswith("repo-")]
     ecc_active = [(n, d) for n, d in own if n.startswith("ecc-")]
     adopted = [(n, d) for n, d in own if (merged[n][1] / n / ".adopted.json").exists()]
-    core = [(n, d) for n, d in own if not n.startswith(("repo-", "ecc-")) and (n, d) not in adopted]
+    bundled = [(n, d) for n, d in own if merged[n][1] == root / "vendor"]
+    core = [(n, d) for n, d in own
+            if not n.startswith(("repo-", "ecc-")) and (n, d) not in adopted and (n, d) not in bundled]
     agents = read_items(root / "agents", "*.md")
 
     v_skills = read_items(vendor / "skills", "*")
@@ -157,6 +160,12 @@ def build(root: Path = ROOT, local: bool = False, user_skills: Path = USER_SKILL
         return [f"| {head[0]} | {head[1]} |", "|---|---|", *[f"| `{n}` | {short(d).replace('|', '/')} |" for n, d in rows]]
 
     L += ["## Loaded: crossbrain core", "", *table(core), ""]
+    L += ["## Loaded: bundled tools", "",
+          "Shipped with crossbrain. `archify` is a pinned, scanned skill folder (needs Node 18+). **graphify** is a Python package "
+          "(`pip install graphifyy`, Python 3.10+) that crossbrain installs into every agent CLI on each sync: build a code graph "
+          "with `python -m graphify update .`, then ask it with `python -m graphify query \"...\"`, `explain` or `path`.", "",
+          *table(bundled + [("graphify", "Turn a codebase into a queryable knowledge graph (graphify-out/): god nodes, "
+                                         "communities, shortest paths. Installed per agent CLI by crossbrain when the package is present.")]), ""]
     L += [f"## Loaded: repo skills ({len(repo_skills)})", "",
           "One per repo, from your brain pack. The SessionStart hook names the right one, and `<pack>/brain/BRAIN.md` maps them.", "",
           ", ".join(f"`{n}`" for n in repo_skills), ""]

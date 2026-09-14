@@ -24,3 +24,14 @@ python scripts/build_capabilities.py
 ```
 
 Open a PR with the diff. Reviewers read new third-party instructions before they reach anyone's agents.
+
+## Updating the bundled archify skill
+
+```bash
+python scripts/vendor_archify.py --ref v2.17.0   # a release tag; stages, scans, then swaps vendor/archify
+python scripts/build_capabilities.py
+node vendor/archify/bin/archify.mjs doctor        # must print "Archify is ready."
+```
+
+Pin release tags, not branches. graphify is not vendored. crossbrain drives the user's installed `graphifyy` package, so there is nothing to
+bump here. If graphify adds or renames an install platform, update `GRAPHIFY_PLATFORMS` in `scripts/components.py` and its test.

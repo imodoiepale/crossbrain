@@ -46,3 +46,18 @@ jobs:
           grep -q "crossbrain:begin" "$HOME/.codex/AGENTS.md"
           python crossbrain.py install   # idempotent
           test "$(grep -c 'crossbrain:begin' "$HOME/.codex/AGENTS.md")" = "1"
+          # archify is bundled: installed as a skill in both targets, and it runs with no npm install.
+          test -f "$HOME/.claude/skills/archify/SKILL.md"
+          test -f "$HOME/.agents/skills/archify/bin/archify.mjs"
+          node "$HOME/.claude/skills/archify/bin/archify.mjs" doctor
+
+      # graphify is installed by its own package; crossbrain must drive it for every present agent CLI.
+      - name: graphify integration (sandboxed home)
+        if: matrix.python == '3.12'
+        shell: bash
+        run: |
+          export HOME="$RUNNER_TEMP/gh" USERPROFILE="$RUNNER_TEMP/gh" CROSSBRAIN_HOME="$RUNNER_TEMP/gh/.crossbrain"
+          mkdir -p "$HOME/.claude" "$HOME/.codex"
+          python crossbrain.py install --with-graphify
+          test -f "$HOME/.claude/skills/graphify/SKILL.md"
+          python crossbrain.py doctor | grep -E "\+ graphify"

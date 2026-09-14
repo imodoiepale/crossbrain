@@ -7,7 +7,8 @@ crossbrain configuration: where the engine lives, where your brain packs are, wh
   "projects_root": "~/Documents/GitHub",   # where your repos are checked out (brain hook, audit, mining)
   "packs": ["~/code/my-brain"],            # brain packs: YOUR skills, lessons, brain map. Usually private.
   "skill_targets": ["claude", "agents"],   # where skills are installed (see SKILL_TARGETS)
-  "instruction_targets": ["claude", "codex", "gemini"]
+  "instruction_targets": ["claude", "codex", "gemini"],
+  "components": ["archify", "graphify"]    # bundled tools (see components.py); remove one to opt out
 }
 
 Engine vs pack: the engine (this repo) is generic and public. A pack is a separate git repo holding
@@ -55,6 +56,7 @@ DEFAULTS = {
     "packs": [],
     "skill_targets": ["claude", "agents"],
     "instruction_targets": ["claude", "codex", "gemini"],
+    "components": ["archify", "graphify"],
 }
 
 
@@ -84,9 +86,14 @@ def primary_pack(cfg: dict | None = None) -> Path | None:
 
 
 def skill_roots(cfg: dict | None = None) -> list[Path]:
-    """Engine first, then packs. When two roots hold the same skill name, the later root wins,
-    so a pack can override an engine skill with its own version."""
-    return [ENGINE / "skills"] + [p / "skills" for p in packs(cfg) if (p / "skills").exists()]
+    """Engine first, then bundled tools, then packs. When two roots hold the same skill name, the later
+    root wins, so a pack can override an engine or bundled skill with its own version.
+
+    vendor/ is a skill root because vendored skill folders (archify) sit directly inside it; vendor/ecc
+    has no SKILL.md of its own, so the ECC library is not installed wholesale."""
+    cfg = cfg or load()
+    bundled = [ENGINE / "vendor"] if "archify" in cfg.get("components", []) else []
+    return [ENGINE / "skills"] + bundled + [p / "skills" for p in packs(cfg) if (p / "skills").exists()]
 
 
 def agent_roots(cfg: dict | None = None) -> list[Path]:

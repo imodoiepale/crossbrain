@@ -23,11 +23,14 @@
 <p align="center">
   <img alt="ECC skills" src="https://img.shields.io/badge/ECC%20library-292%20skills%20%C2%B7%2068%20agents%20%C2%B7%2094%20commands-f472b6">
   <img alt="Rule packs" src="https://img.shields.io/badge/rule%20packs-22%20languages-818cf8">
+  <a href="https://github.com/Graphify-Labs/graphify"><img alt="graphify" src="https://img.shields.io/badge/bundled-graphify%20code%20graph-0f766e"></a>
+  <a href="https://github.com/tt-a1i/archify"><img alt="archify" src="https://img.shields.io/badge/bundled-archify%20diagrams-9333ea"></a>
 </p>
 
 <p align="center">
   <b>Your coding agents forget everything between sessions. crossbrain gives them one shared, growing brain</b><br>
   skills learned from your own git history · security gates at the end of the pipeline · a fixed procedure for any project ·<br>
+  a code knowledge graph (<a href="https://github.com/Graphify-Labs/graphify">graphify</a>) and validated diagrams (<a href="https://github.com/tt-a1i/archify">archify</a>) ·
   the entire <a href="https://github.com/affaan-m/ecc">ECC</a> library on demand · identical on every machine, in every agent CLI.
 </p>
 
@@ -47,8 +50,10 @@ curl -fsSL https://raw.githubusercontent.com/imodoiepale/crossbrain/main/install
 irm https://raw.githubusercontent.com/imodoiepale/crossbrain/main/install.ps1 | iex
 ```
 
-It clones the engine to `~/.crossbrain/engine`, adds a `crossbrain` command, installs skills into every agent CLI it finds, and runs
-`crossbrain doctor`. Re-run it to update. It needs `git` and Python 3.9+, and it never asks for or stores a credential.
+It clones the engine to `~/.crossbrain/engine`, adds a `crossbrain` command, installs skills (including archify) into every agent CLI it
+finds, installs graphify into those CLIs if the package is present, and runs `crossbrain doctor`. Re-run it to update. It needs `git` and
+Python 3.9+, and it never asks for or stores a credential. For graphify too, add `--with-graphify` (Python 3.10+):
+`curl -fsSL …/install.sh | bash -s -- --with-graphify`.
 [Read install.sh](install.sh) before piping it to a shell, since it's short.
 
 ---
@@ -59,6 +64,7 @@ It clones the engine to `~/.crossbrain/engine`, adds a `crossbrain` command, ins
 - [What you get](#-what-you-get)
 - [How it works](#-how-it-works)
 - [Works with every agent CLI](#-works-with-every-agent-cli)
+- [Bundled tools: graphify + archify](#-bundled-tools-graphify--archify)
 - [Quick start](#-quick-start)
 - [The skills](#-the-skills)
 - [Project intake](#-project-intake-any-project-same-procedure)
@@ -93,6 +99,8 @@ crossbrain fixes this with plain files and git. There's no server, database, or 
 | 🗂️ | **Capabilities** | One generated, self-updating index of *everything* an agent can use: your skills, plugin skills, and the full ECC library. |
 | 🛡️ | **Preflight gate** | Blocks secrets, `.env` files, blobs over 5 MB, and protected-branch commits. It runs as a pre-commit hook in every repo, and it's regression-tested against real leaks *and* real false positives. |
 | 🔍 | **Project intake** | A fixed sequence for any unfamiliar project: evidence scan, architecture map, security audit, defect-class sweep, production readiness, and a report. |
+| 🕸️ | **Code graph (graphify)** | Installed into every agent CLI. Agents ask the graph where things are, and what breaks if they change, *before* writing code. Project intake builds one for every new repo. |
+| 📐 | **Diagrams (archify)** | Bundled as a skill. Agents render validated architecture, sequence, data-flow and state diagrams as interactive HTML, drawn from the real code. |
 | 📦 | **Full ECC library** | 292 skills, 68 agents, 94 commands, and 22 language rule packs, vendored, pinned, and scanned. Any of it can be read on demand or promoted to always-loaded. |
 | 🔄 | **Sync & adoption** | Drop a skill into `~/.claude/skills` on any machine, and the next sync scans it, commits it to your private brain pack, and installs it on every other machine. |
 | 🧩 | **Every agent CLI** | One install feeds Claude Code, Codex, Cursor, Gemini CLI, OpenCode and Kimi Code. |
@@ -108,6 +116,7 @@ flowchart LR
     direction TB
     S1["core skills<br/>brain · capabilities · project-intake<br/>ship · retro · history-to-skills"]
     S2["ECC library<br/>292 skills · 68 agents<br/>94 commands · 22 rule packs"]
+    S3["bundled tools<br/>archify diagrams · graphify code graph"]
     T["tools<br/>preflight · intake-scan · mine<br/>adopt · sync · shim"]
   end
 
@@ -154,6 +163,7 @@ sequenceDiagram
   Hook-->>Agent: "You are in shop-api · RLS dropped writes silently before · verify with npm test"
   You->>Agent: "add refunds"
   Agent->>Skills: brain → repo-shop-api → capabilities (ecc-security-review)
+  Agent->>Agent: graphify query "where are payments captured" (reuse before writing)
   Agent->>Agent: build · run the repo's real tests
   Agent->>Gate: git commit
   alt secret, .env, blob or protected branch
@@ -210,6 +220,45 @@ it would hide your `CLAUDE.md` from OpenCode.
 
 ---
 
+## 🧰 Bundled tools: graphify + archify
+
+Two tools make the skills concrete instead of aspirational. crossbrain installs both and tells every agent exactly when to use them.
+
+```mermaid
+flowchart LR
+  subgraph G["graphify · code knowledge graph"]
+    G1["python -m graphify update .<br/>(no LLM)"] --> G2[("graphify-out/<br/>graph.json · GRAPH_REPORT.md")]
+    G2 --> G3["query · explain · path"]
+  end
+  subgraph A["archify · validated diagrams"]
+    A1["typed JSON spec<br/>or pasted Mermaid"] --> A2["validate"] --> A3["interactive HTML<br/>PNG · SVG · WebM export"]
+  end
+  BR["brain · step 5 Reuse"] --> G3
+  PI["project-intake · phase 2"] --> G1
+  PI --> A1
+  G2 -. "real nodes and edges" .-> A1
+```
+
+| | graphify | archify |
+|---|---|---|
+| **What** | Turns a codebase into a queryable knowledge graph: god nodes, communities, shortest paths | Renders architecture, workflow, sequence, data-flow and lifecycle diagrams as standalone HTML |
+| **How crossbrain ships it** | Python package [`graphifyy`](https://github.com/Graphify-Labs/graphify) (Apache-2.0). On every install and sync, crossbrain runs `graphify install` for each agent CLI present, so its skill stays current everywhere | Vendored from [tt-a1i/archify](https://github.com/tt-a1i/archify) (MIT) at a **pinned release**, scanned like ECC, installed as a skill in every agent CLI |
+| **Requirements** | Python 3.10+ | Node 18+ (no `npm install`) |
+| **Used by** | `brain` (query before writing), `project-intake` phase 2, the instruction blocks | `project-intake` phase 2 (`docs/intake/architecture.html`), any "draw the architecture" request |
+| **Opt out** | remove `"graphify"` from `components` | remove `"archify"` from `components` |
+
+```bash
+crossbrain install --with-graphify     # also pip-installs graphify if it is missing (runs third-party code - opt-in)
+python -m graphify update .            # build the graph for the current repo
+python -m graphify query "where is auth enforced"
+crossbrain doctor                      # shows archify version + Node, graphify version + platforms
+```
+
+`crossbrain doctor` reports both. If graphify isn't installed, crossbrain prints the exact command and carries on. It never pip-installs
+unless you pass `--with-graphify`.
+
+---
+
 ## 🚀 Quick start
 
 ```mermaid
@@ -256,6 +305,8 @@ On a second machine, install crossbrain, then run `crossbrain pack add ~/my-brai
 | **`history-to-skills`** | Setting up, adding a repo, or when `crossbrain drift` shows fixes newer than a skill. |
 | **`ship`** | Committing, pushing, PRs, releases. It covers branch lanes, preflight, why-not-what commits and honest PRs. |
 | **`retro`** | Ending a task. It routes the lesson to the one place the next session will read. |
+| **`archify`** (bundled) | Drawing architecture, workflow, sequence, data-flow or state diagrams from real code. |
+| **`graphify`** (bundled) | Answering "where is X / what calls Y / what breaks if I change Z" from the code graph before writing code. |
 | **`ecc-*`** (active set) | Security review, production audit, codebase onboarding, ADRs, migrations, Postgres, deployment, verification, Next.js, hexagonal architecture. |
 
 Five ECC reviewer agents install as Claude Code subagents: `ecc-security-reviewer`, `ecc-silent-failure-hunter`,
@@ -278,7 +329,7 @@ flowchart TD
   P1 --> STOP{"critical finding?<br/>live secret · key in client bundle"}
   STOP -- yes --> U["⛔ tell the user first<br/>rotation steps on top"]
   STOP -- no --> P2
-  U --> P2["2 · Architecture map<br/>onboarding · architect agent · ADRs · diagram"]
+  U --> P2["2 · Architecture map<br/>graphify graph · onboarding · architect agent · ADRs · archify diagram"]
   P2 --> P3["3 · Security audit<br/>secrets → access → auth → input → payments → silent failure → agent surface → PII"]
   P3 --> P4["4 · Defect-class sweep<br/>yes / no / unknown for each"]
   P4 --> P5["5 · Production readiness<br/>lenses · score band · real build + tests"]
@@ -354,10 +405,10 @@ Full threat model: **[docs/SECURITY.md](docs/SECURITY.md)**.
 
 | Command | Does |
 |---|---|
-| `crossbrain install [--targets claude,agents] [--dry-run]` | Install skills, agents, instruction blocks and the Claude hook |
+| `crossbrain install [--with-graphify] [--targets claude,agents] [--dry-run]` | Install skills, agents, instruction blocks, archify, graphify and the Claude hook |
 | `crossbrain sync [--no-push] [--quiet]` | Pull → tests → adopt → install → brain → capabilities → drift |
 | `crossbrain schedule on\|off` | Daily and at-logon sync (Task Scheduler / cron) |
-| `crossbrain doctor` | Detected agent CLIs, targets, packs and hook status |
+| `crossbrain doctor` | Detected agent CLIs, targets, packs, archify/Node, graphify version and platforms, hook status |
 | `crossbrain pack init\|add <dir>` | Create or attach a brain pack |
 | `crossbrain config [key [value]]` | Read or change `~/.crossbrain/config.json` |
 | `crossbrain mine [--out DIR]` | Git history → redacted per-repo digests |
@@ -379,7 +430,8 @@ Full threat model: **[docs/SECURITY.md](docs/SECURITY.md)**.
   "projects_root": "~/code",
   "packs": ["~/my-brain"],
   "skill_targets": ["claude", "agents"],
-  "instruction_targets": ["claude", "codex", "gemini"]
+  "instruction_targets": ["claude", "codex", "gemini"],
+  "components": ["archify", "graphify"]
 }
 ```
 
@@ -397,6 +449,7 @@ crossbrain/
 ├── skills/                  core skills + active ECC skills + generated capabilities
 ├── agents/                  active ECC subagents
 ├── vendor/ecc/              the full ECC library (pinned, scanned)
+├── vendor/archify/          archify diagram skill (pinned release, scanned)
 ├── scripts/                 preflight · project_audit · mine · adopt · sync · install · shim · tests
 └── docs/                    HARNESSES.md · SECURITY.md
 ```
@@ -429,6 +482,15 @@ skills claim universal triggers that collide with each other. The library tier k
 </details>
 
 <details>
+<summary><b>Does it install graphify and archify?</b></summary>
+
+Yes. **archify** ships inside crossbrain at a pinned release and installs as a skill in every agent CLI. It needs Node 18+ to run.
+**graphify** is a separate Python package (Python 3.10+). If it's installed, crossbrain runs `graphify install` for every agent CLI on
+each install and sync. If it isn't, `crossbrain install --with-graphify` installs it. Both are wired into `brain` and `project-intake`,
+and into the instruction block every agent reads.
+</details>
+
+<details>
 <summary><b>Will it overwrite my existing CLAUDE.md / AGENTS.md?</b></summary>
 
 No. It writes a single block between `<!-- crossbrain:begin -->` and `<!-- crossbrain:end -->`, and it only touches tools whose config folder
@@ -458,8 +520,11 @@ Issues and PRs are welcome. Read **[CONTRIBUTING.md](CONTRIBUTING.md)**. The sho
 ## 🙏 Credits
 
 - **[ECC](https://github.com/affaan-m/ecc)** by Affaan Mustafa (MIT): the skills, agents, commands and rule packs in `vendor/ecc/`.
+- **[archify](https://github.com/tt-a1i/archify)** by tt-a1i (MIT): the diagram skill in `vendor/archify/`.
+- **[graphify](https://github.com/Graphify-Labs/graphify)** by Graphify Labs (Apache-2.0): the code knowledge graph, installed from its own package.
 - The [Agent Skills](https://agentskills.io) format, which lets one skill folder work across agent CLIs.
 
 ## 📄 License
 
-[MIT](LICENSE). Vendored ECC content remains under its own MIT license ([vendor/ecc/LICENSE](vendor/ecc/LICENSE)).
+[MIT](LICENSE). Vendored ECC and archify content remain under their own MIT licenses ([vendor/ecc/LICENSE](vendor/ecc/LICENSE),
+[vendor/archify/LICENSE](vendor/archify/LICENSE)). graphify is not redistributed; it is installed from its own package.

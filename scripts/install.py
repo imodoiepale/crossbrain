@@ -37,7 +37,9 @@ Skills from crossbrain are installed. Before any coding task:
 1. `brain`: identify the project and load its `repo-*` skill if one exists.
 2. `capabilities`: the index of everything available (skills, the full ECC library, commands, rule packs). Read a matching skill before writing something from scratch.
 3. `project-intake`: for any unfamiliar, inherited or client project, or any "audit / is this safe / what's the architecture" request.
-4. Never paste or echo a secret. Commit through the preflight gate (`crossbrain preflight --staged`).
+4. Before writing code in a repo with `graphify-out/`, query the code graph (`python -m graphify query "<question>"`). Refresh it with `python -m graphify update .` (no LLM).
+5. For architecture, workflow, sequence, data-flow or state diagrams, use the `archify` skill.
+6. Never paste or echo a secret. Commit through the preflight gate (`crossbrain preflight --staged`).
 {end}
 """
 
@@ -93,7 +95,7 @@ def upsert_block(path: Path, block: str) -> str:
     return "updated" if text else "created"
 
 
-def install(cfg: dict | None = None, dry_run: bool = False, log=print) -> dict:
+def install(cfg: dict | None = None, dry_run: bool = False, log=print, allow_pip: bool = False) -> dict:
     cfg = cfg or hc.load()
     skills = collect(hc.skill_roots(cfg), "*")
     report = {"skills": len(skills), "targets": [], "agents": 0, "instructions": {}}
@@ -137,6 +139,13 @@ def install(cfg: dict | None = None, dry_run: bool = False, log=print) -> dict:
         log(f"  rules   {name:<8} {report['instructions'][name]} ({path})")
 
     if not dry_run:
+        import components
+        if "archify" in cfg.get("components", []):
+            st = components.archify_status(cfg)
+            log(f"  archify {st['ref'] or 'NOT VENDORED'} -> installed as a skill"
+                + ("" if st["node_ok"] else f"  (needs Node 18+ to run; found {st['node'] or 'no node'})"))
+        if "graphify" in cfg.get("components", []):
+            report["graphify"] = components.install_graphify(cfg, log=log, allow_pip=allow_pip)
         for script, args in (("build_capabilities.py", ["--local"]), ("build_brain.py", [])):
             subprocess.run([sys.executable, str(hc.ENGINE / "scripts" / script), *args], check=False)
         if "claude" in cfg["skill_targets"] and hc.expand("~/.claude").exists():

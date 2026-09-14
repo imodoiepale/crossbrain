@@ -2,7 +2,8 @@
 """
 crossbrain - one brain for every coding agent.
 
-  install                 install skills, agents and instructions into every agent CLI on this machine
+  install [--with-graphify]   install skills, agents, instructions, archify and graphify into every agent CLI
+                          (--with-graphify also pip-installs graphify if it is missing)
   sync [--no-push]        pull, test, adopt hand-added skills, install, rebuild, report drift
   schedule on|off         run sync daily and at logon
   doctor                  show detected agent CLIs, targets, packs and health
@@ -65,6 +66,17 @@ def doctor() -> int:
         print(f"  {mark} {p}")
     if not cfg["packs"]:
         print("  none - run `crossbrain pack init ~/my-brain` to keep your own skills and lessons")
+    import components
+    print("\nbundled tools")
+    a = components.archify_status(cfg)
+    print(f"  {'+' if a['enabled'] and a['vendored'] and a['node_ok'] else '-'} archify   "
+          f"{a['ref'] or 'not vendored'} ({'enabled' if a['enabled'] else 'disabled'}); node {a['node'] or 'MISSING'}"
+          + ("" if a["node_ok"] else " - needs Node 18+"))
+    gv = components.graphify_version()
+    enabled = "graphify" in cfg.get("components", [])
+    print(f"  {'+' if gv and enabled else '-'} graphify  "
+          + (f"{gv} ({'enabled' if enabled else 'disabled'}); platforms: {', '.join(components.graphify_platforms(cfg)) or 'none'}"
+             if gv else f"not installed - pip install {components.GRAPHIFY_PACKAGE}, or crossbrain install --with-graphify"))
     hook = hc.expand("~/.claude/settings.json")
     hooked = hook.exists() and "brain_hook.py" in hook.read_text(encoding="utf-8", errors="replace")
     print(f"\nClaude SessionStart brain hook: {'installed' if hooked else 'not installed'}")
@@ -157,7 +169,7 @@ def main(argv: list[str]) -> int:
         if "--targets" in rest:
             cfg["skill_targets"] = rest[rest.index("--targets") + 1].split(",")
         print("crossbrain install")
-        inst.install(cfg, dry_run="--dry-run" in rest)
+        inst.install(cfg, dry_run="--dry-run" in rest, allow_pip="--with-graphify" in rest)
         print("\nDone. Start a new agent session to load the skills. Next: `crossbrain doctor`, `crossbrain schedule on`.")
         return 0
     if cmd == "sync":
