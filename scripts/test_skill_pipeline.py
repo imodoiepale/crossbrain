@@ -5,6 +5,9 @@ capabilities catalogue. No network, no real ~/.claude.
     python -m unittest scripts/test_skill_pipeline.py -v
 """
 
+# Without this, `str | None` in a signature is evaluated at import and Python 3.9 cannot load the module.
+from __future__ import annotations
+
 import json
 import sys
 import tempfile

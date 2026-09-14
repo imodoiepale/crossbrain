@@ -17,9 +17,17 @@ say() { printf '\033[36m==>\033[0m %s\n' "$*"; }
 die() { printf '\033[31merror:\033[0m %s\n' "$*" >&2; exit 1; }
 
 command -v git >/dev/null 2>&1 || die "git is required"
-PY="$(command -v python3 || command -v python || true)"
-[ -n "$PY" ] || die "python 3.9+ is required"
-"$PY" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 9) else 1)' || die "python 3.9+ is required"
+# Try each candidate for real: on Windows, `python3` is often a Microsoft Store stub that exists on PATH
+# but only prints "Python was not found", so `command -v` alone picks a Python that cannot run.
+PY=""
+for candidate in python3 python py; do
+  if command -v "$candidate" >/dev/null 2>&1 &&
+     "$candidate" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 9) else 1)' >/dev/null 2>&1; then
+    PY="$(command -v "$candidate")"
+    break
+  fi
+done
+[ -n "$PY" ] || die "python 3.9+ is required (tried python3, python, py)"
 
 if [ -d "$ENGINE/.git" ]; then
   say "updating $ENGINE"

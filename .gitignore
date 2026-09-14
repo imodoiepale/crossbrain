@@ -2,11 +2,13 @@
 __pycache__/
 *.pyc
 .venv/
-# Output that may describe your private repos - never commit it to the public engine
-digests/
-*-audit.md
-*-audit.json
-creds.csv
+# Output that may describe your private repos - never commit it to the public engine.
+# Anchored to the repo root: an unanchored `*-audit.md` also matched ECC's commands/harness-audit.md,
+# silently dropping it from the vendored library and breaking the capabilities check on every CI runner.
+/digests/
+/*-audit.md
+/*-audit.json
+/creds.csv
 # Secrets
 .env
 .env.*
