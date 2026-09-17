@@ -40,7 +40,7 @@ Skills from crossbrain are installed. Before any coding task:
 4. Before writing code in a repo with `graphify-out/`, query the code graph (`python -m graphify query "<question>"`). Refresh it with `python -m graphify update .` (no LLM).
 5. For architecture, workflow, sequence, data-flow or state diagrams, use the `archify` skill.
 6. Never paste or echo a secret. Commit through the preflight gate (`crossbrain preflight --staged`).
-{end}
+{rules}{end}
 """
 
 
@@ -95,6 +95,21 @@ def upsert_block(path: Path, block: str) -> str:
     return "updated" if text else "created"
 
 
+def always_on_rules(cfg: dict) -> str:
+    """Rulesets that apply to EVERY coding task, embedded verbatim in the instruction block so no skill has to be
+    invoked for them to hold. Currently ponytail (MIT), vendored at a pinned release."""
+    if "ponytail" not in cfg.get("components", []):
+        return ""
+    import vendor_skillpacks
+    text = vendor_skillpacks.rules_text("ponytail").strip()
+    if not text:
+        return ""
+    credit = ("(Ponytail, MIT, vendored from github.com/DietrichGebert/ponytail, always on. The `ponytail` skill carries the"
+              " full ladder; `ponytail-review`, `-audit`, `-debt`, `-gain` and `-help` are on demand.)")
+    blank = chr(10) * 2
+    return blank + "---" + blank + text + blank + credit + chr(10)
+
+
 def install(cfg: dict | None = None, dry_run: bool = False, log=print, allow_pip: bool = False) -> dict:
     cfg = cfg or hc.load()
     skills = collect(hc.skill_roots(cfg), "*")
@@ -126,7 +141,7 @@ def install(cfg: dict | None = None, dry_run: bool = False, log=print, allow_pip
         report["agents"] = len(agents)
         log(f"  agents  {len(agents):>3} -> {dest}")
 
-    block = INSTRUCTIONS.format(begin=BLOCK_BEGIN, end=BLOCK_END)
+    block = INSTRUCTIONS.format(begin=BLOCK_BEGIN, end=BLOCK_END, rules=always_on_rules(cfg))
     for name in cfg["instruction_targets"]:
         if name not in hc.INSTRUCTION_TARGETS:
             continue

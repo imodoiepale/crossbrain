@@ -1,0 +1,16 @@
+{
+  "url": "https://github.com/DietrichGebert/ponytail",
+  "ref": "v4.10.0",
+  "commit": "1d95ff7d39de12d87014ea40d4e22201bddc501b",
+  "license": "MIT",
+  "skills": [
+    "ponytail",
+    "ponytail-audit",
+    "ponytail-debt",
+    "ponytail-gain",
+    "ponytail-help",
+    "ponytail-review"
+  ],
+  "rules_file": "AGENTS.md",
+  "why": "lazy-senior-dev ladder: YAGNI, reuse, stdlib, native, one line - with safety carve-outs"
+}

@@ -112,14 +112,19 @@ class ShimTest(unittest.TestCase):
         self.assertEqual(seen["headers"]["x-claude-code-session-id"], "abc")
 
     def test_response_streams_rather_than_buffering(self):
-        t0 = time.monotonic()
+        # The upstream emits 3 events 0.4s apart. Streaming means the first event arrives well BEFORE the last
+        # one is produced; buffering means both land together. Comparing the two timestamps tests exactly that,
+        # where an absolute deadline would only measure how busy the machine is (it failed at 0.56s under load).
         c, r = self.post({"stream": True})
         first = r.read1(64)
-        first_at = time.monotonic() - t0
-        rest = r.read(); c.close()
+        first_at = time.monotonic()
+        rest = r.read()
+        done_at = time.monotonic()
+        c.close()
         self.assertIn(b"data: 0", first)
-        self.assertLess(first_at, 0.35, "first SSE event waited for the whole response")
         self.assertIn(b"data: 2", first + rest)
+        self.assertGreater(done_at - first_at, 0.5,
+                           "the first event arrived with the last: the response was buffered, not streamed")
 
     def test_refuses_non_loopback_bind(self):
         with self.assertRaises(SystemExit):

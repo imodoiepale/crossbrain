@@ -25,6 +25,17 @@ python scripts/build_capabilities.py
 
 Open a PR with the diff. Reviewers read new third-party instructions before they reach anyone's agents.
 
+## Updating a vendored skill pack (ponytail, engineer skills)
+
+```bash
+python scripts/vendor_skillpacks.py ponytail --ref v4.11.0   # stages, scans, then swaps vendor/ponytail
+python scripts/build_capabilities.py
+python -m unittest scripts/test_packs.py
+```
+
+ponytail's ruleset goes verbatim into the instruction block every agent reads, so read the upstream diff before moving its pin.
+Never vendor a pack's hooks, plugins or MCP server: those run code on a user's machine.
+
 ## Updating the bundled archify skill
 
 ```bash

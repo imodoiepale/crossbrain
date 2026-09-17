@@ -106,14 +106,15 @@ def build(root: Path = ROOT, local: bool = False, user_skills: Path = USER_SKILL
 
     merged: dict[str, tuple[str, Path]] = {}
     # engine skills, then bundled tools vendored as skill folders (archify), then brain packs (which override both)
-    for folder in (skills_dir, root / "vendor", *[r for r in extra_roots if r != root / "vendor"]):
+    vendored = [root / rel for rel in hc.VENDORED_SKILL_ROOTS.values()]
+    for folder in (skills_dir, *vendored, *[r for r in extra_roots if r not in vendored]):
         for n, d in read_items(folder, "*"):
             merged[n] = (d, folder)
     own = [(n, v[0]) for n, v in sorted(merged.items()) if n != "capabilities"]
     repo_skills = [n for n, _ in own if n.startswith("repo-")]
     ecc_active = [(n, d) for n, d in own if n.startswith("ecc-")]
     adopted = [(n, d) for n, d in own if (merged[n][1] / n / ".adopted.json").exists()]
-    bundled = [(n, d) for n, d in own if merged[n][1] == root / "vendor"]
+    bundled = [(n, d) for n, d in own if merged[n][1] in vendored]
     core = [(n, d) for n, d in own
             if not n.startswith(("repo-", "ecc-")) and (n, d) not in adopted and (n, d) not in bundled]
     agents = read_items(root / "agents", "*.md")

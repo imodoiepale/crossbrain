@@ -75,6 +75,16 @@ def doctor() -> int:
     print(f"  {'+' if a['enabled'] and a['vendored'] and a['node_ok'] else '-'} archify   "
           f"{a['ref'] or 'not vendored'} ({'enabled' if a['enabled'] else 'disabled'}); node {a['node'] or 'MISSING'}"
           + ("" if a["node_ok"] else " - needs Node 18+"))
+    import json as _json
+    for pack in ("ponytail", "engineer-skills"):
+        origin = hc.ENGINE / "vendor" / pack / "ORIGIN.json"
+        if origin.exists():
+            info = _json.loads(origin.read_text(encoding="utf-8"))
+            on = pack in cfg.get("components", [])
+            print(f"  {'+' if on else '-'} {pack:<9} {info['ref']} ({'enabled' if on else 'disabled'}); "
+                  f"{len(info['skills'])} skills" + (", always-on rules in every instruction block" if info.get("rules_file") and on else ""))
+        else:
+            print(f"  - {pack:<9} not vendored - run `python scripts/vendor_skillpacks.py {pack}`")
     gv = components.graphify_version()
     enabled = "graphify" in cfg.get("components", [])
     print(f"  {'+' if gv and enabled else '-'} graphify  "

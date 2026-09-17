@@ -8,7 +8,7 @@ crossbrain configuration: where the engine lives, where your brain packs are, wh
   "packs": ["~/code/my-brain"],            # brain packs: YOUR skills, lessons, brain map. Usually private.
   "skill_targets": ["claude", "agents"],   # where skills are installed (see SKILL_TARGETS)
   "instruction_targets": ["claude", "codex", "gemini"],
-  "components": ["archify", "graphify"]    # bundled tools (see components.py); remove one to opt out
+  "components": ["archify", "graphify", "ponytail", "engineer-skills"]   # bundled tools and skill packs; remove to opt out
 }
 
 Engine vs pack: the engine (this repo) is generic and public. A pack is a separate git repo holding
@@ -51,12 +51,21 @@ INSTRUCTION_TARGETS = {
     "opencode": "~/.config/opencode/AGENTS.md",
 }
 
+# component -> directory holding its installable skill folders, relative to the engine.
+# "vendor" itself holds archify (a SKILL.md folder); vendor/ecc has no SKILL.md of its own, so the ECC
+# library is never installed wholesale.
+VENDORED_SKILL_ROOTS = {
+    "archify": "vendor",
+    "ponytail": "vendor/ponytail/skills",
+    "engineer-skills": "vendor/engineer-skills/skills",
+}
+
 DEFAULTS = {
     "projects_root": "~/Documents/GitHub" if (Path.home() / "Documents" / "GitHub").exists() else "~/code",
     "packs": [],
     "skill_targets": ["claude", "agents"],
     "instruction_targets": ["claude", "codex", "gemini"],
-    "components": ["archify", "graphify"],
+    "components": ["archify", "graphify", "ponytail", "engineer-skills"],
 }
 
 
@@ -92,7 +101,8 @@ def skill_roots(cfg: dict | None = None) -> list[Path]:
     vendor/ is a skill root because vendored skill folders (archify) sit directly inside it; vendor/ecc
     has no SKILL.md of its own, so the ECC library is not installed wholesale."""
     cfg = cfg or load()
-    bundled = [ENGINE / "vendor"] if "archify" in cfg.get("components", []) else []
+    enabled = cfg.get("components", [])
+    bundled = [ENGINE / rel for comp, rel in VENDORED_SKILL_ROOTS.items() if comp in enabled]
     return [ENGINE / "skills"] + bundled + [p / "skills" for p in packs(cfg) if (p / "skills").exists()]
 
 

@@ -25,6 +25,7 @@
   <img alt="Rule packs" src="https://img.shields.io/badge/rule%20packs-22%20languages-818cf8">
   <a href="https://github.com/Graphify-Labs/graphify"><img alt="graphify" src="https://img.shields.io/badge/bundled-graphify%20code%20graph-0f766e"></a>
   <a href="https://github.com/tt-a1i/archify"><img alt="archify" src="https://img.shields.io/badge/bundled-archify%20diagrams-9333ea"></a>
+  <a href="https://github.com/DietrichGebert/ponytail"><img alt="ponytail" src="https://img.shields.io/badge/always--on-ponytail%20YAGNI%20rules-0ea5e9"></a>
 </p>
 
 <p align="center">
@@ -100,6 +101,8 @@ crossbrain fixes this with plain files and git. There's no server, database, or 
 | 🛡️ | **Preflight gate** | Blocks secrets, `.env` files, blobs over 5 MB, and protected-branch commits. It runs as a pre-commit hook in every repo, and it's regression-tested against real leaks *and* real false positives. |
 | 🔍 | **Project intake** | A fixed sequence for any unfamiliar project: evidence scan, architecture map, security audit, defect-class sweep, production readiness, and a report. |
 | 🕸️ | **Code graph (graphify)** | Installed into every agent CLI. Agents ask the graph where things are, and what breaks if they change, *before* writing code. Project intake builds one for every new repo. |
+| ✂️ | **Always-on ponytail rules** | Every agent, in every repo, works to the [ponytail](https://github.com/DietrichGebert/ponytail) ladder: YAGNI, reuse what is here, stdlib, native feature, one line, and only then new code. Embedded in the instruction block, so nothing has to be invoked. Its safety carve-outs stay: understand the problem, validate input, handle errors, security, accessibility, leave one runnable check. |
+| 🧑‍🔧 | **Engineer skills** | architect (design docs before code), review-swarm (parallel specialist review), ask-the-council (panel + a committed recommendation), prompt-generator, up-to-date (repo preflight). |
 | 📐 | **Diagrams (archify)** | Bundled as a skill. Agents render validated architecture, sequence, data-flow and state diagrams as interactive HTML, drawn from the real code. |
 | 📦 | **Full ECC library** | 292 skills, 68 agents, 94 commands, and 22 language rule packs, vendored, pinned, and scanned. Any of it can be read on demand or promoted to always-loaded. |
 | 🔄 | **Sync & adoption** | Drop a skill into `~/.claude/skills` on any machine, and the next sync scans it, commits it to your private brain pack, and installs it on every other machine. |
@@ -256,6 +259,19 @@ crossbrain doctor                      # shows archify version + Node, graphify 
 
 `crossbrain doctor` reports both. If graphify isn't installed, crossbrain prints the exact command and carries on. It never pip-installs
 unless you pass `--with-graphify`.
+
+### Skill packs: ponytail + engineer skills
+
+| | ponytail | engineer skills |
+|---|---|---|
+| **What** | The laziest-senior-dev ladder against over-engineering, plus `ponytail-review`, `-audit`, `-debt`, `-gain`, `-help` | `architect`, `review-swarm`, `ask-the-council`, `prompt-generator`, `up-to-date` |
+| **Source** | [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) (MIT), pinned release | [alonbaron/claude-skills](https://github.com/alonbaron/claude-skills) (MIT), pinned release |
+| **How it applies** | **Always on**: the ruleset is embedded verbatim in the instruction block every agent reads, and the `ponytail` skill carries the full ladder | On demand, by skill description |
+| **Opt out** | remove `"ponytail"` from `components` | remove `"engineer-skills"` |
+
+Only `SKILL.md` folders and licence/rule text are vendored. ponytail's hooks, plugins and MCP server are deliberately left upstream: they are
+code that would run on your machine, and crossbrain has its own hooks. Move a pin with `python scripts/vendor_skillpacks.py ponytail --ref vX.Y.Z`,
+which stages, scans and only then swaps it in.
 
 ### Who runs them, and with which model
 
@@ -560,9 +576,13 @@ Issues and PRs are welcome. Read **[CONTRIBUTING.md](CONTRIBUTING.md)**. The sho
 - **[ECC](https://github.com/affaan-m/ecc)** by Affaan Mustafa (MIT): the skills, agents, commands and rule packs in `vendor/ecc/`.
 - **[archify](https://github.com/tt-a1i/archify)** by tt-a1i (MIT): the diagram skill in `vendor/archify/`.
 - **[graphify](https://github.com/Graphify-Labs/graphify)** by Graphify Labs (Apache-2.0): the code knowledge graph, installed from its own package.
+- **[ponytail](https://github.com/DietrichGebert/ponytail)** by Dietrich Gebert (MIT): the always-on anti-over-engineering ruleset and its skills in `vendor/ponytail/`.
+- **[alon-skills](https://github.com/alonbaron/claude-skills)** by Alon Baron (MIT): architect, review-swarm, ask-the-council, prompt-generator and up-to-date in `vendor/engineer-skills/`.
 - The [Agent Skills](https://agentskills.io) format, which lets one skill folder work across agent CLIs.
 
 ## 📄 License
 
-[MIT](LICENSE). Vendored ECC and archify content remain under their own MIT licenses ([vendor/ecc/LICENSE](vendor/ecc/LICENSE),
-[vendor/archify/LICENSE](vendor/archify/LICENSE)). graphify is not redistributed; it is installed from its own package.
+[MIT](LICENSE). Vendored ECC, archify, ponytail and engineer-skills content remain under their own MIT licenses
+([vendor/ecc/LICENSE](vendor/ecc/LICENSE), [vendor/archify/LICENSE](vendor/archify/LICENSE),
+[vendor/ponytail/LICENSE](vendor/ponytail/LICENSE), [vendor/engineer-skills/LICENSE](vendor/engineer-skills/LICENSE)).
+graphify is not redistributed; it is installed from its own package.
