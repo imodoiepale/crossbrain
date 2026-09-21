@@ -126,6 +126,8 @@ def sync(push: bool = True, quiet: bool = False) -> int:
     say(f"engine {pull(hc.ENGINE)}")
     for pack in hc.packs(cfg):
         say(f"pack {pack.name} {pull(pack, allow_owned=True)}")
+    for name, lib in cfg.get("libraries", {}).items():
+        say(f"library {name} {pull(hc.expand(lib))}")
 
     tests = run([sys.executable, "-m", "unittest", "discover", "-s", str(hc.ENGINE / "scripts"), "-p", "test_*.py"])
     if tests.returncode != 0:

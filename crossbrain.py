@@ -21,6 +21,7 @@ crossbrain - one brain for every coding agent.
                           the preflight gate (pre-commit) + graphify graph hooks (post-commit/checkout)
   graph status|update [path|--all]       code-graph freshness per repo; rebuild with graphify (no LLM)
   graph instruct [path|--all] [--uninstall]   write graphify's graph-first rules into each repo's CLAUDE.md + AGENTS.md
+  library search|list     search on-demand skill libraries (e.g. the cybersecurity library)
   shim [--port N]         the secret-redacting proxy for agent memory services
 """
 
@@ -41,7 +42,7 @@ import hconfig as hc  # noqa: E402
 PASSTHROUGH = {
     "intake-scan": "project_audit.py", "audit": "project_audit.py", "mine": "mine_repo_history.py",
     "brain": "build_brain.py", "capabilities": "build_capabilities.py", "adopt": "adopt_skills.py",
-    "ecc": "ecc.py", "preflight": "preflight.py", "shim": "memory_redact_shim.py", "drift": "knowledge_drift.py",
+    "ecc": "ecc.py", "library": "library.py", "preflight": "preflight.py", "shim": "memory_redact_shim.py", "drift": "knowledge_drift.py",
 }
 CLIS = {"claude": "Claude Code", "codex": "Codex", "cursor": "Cursor", "gemini": "Gemini CLI",
         "opencode": "OpenCode", "kimi": "Kimi Code"}

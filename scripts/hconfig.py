@@ -66,6 +66,7 @@ DEFAULTS = {
     "skill_targets": ["claude", "agents"],
     "instruction_targets": ["claude", "codex", "gemini"],
     "components": ["archify", "graphify", "ponytail", "engineer-skills"],
+    "libraries": {},          # on-demand skill libraries (git clones), searched by `crossbrain library`, never loaded wholesale
 }
 
 
