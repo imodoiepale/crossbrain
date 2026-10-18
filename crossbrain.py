@@ -45,7 +45,7 @@ PASSTHROUGH = {
     "ecc": "ecc.py", "library": "library.py", "preflight": "preflight.py", "shim": "memory_redact_shim.py", "drift": "knowledge_drift.py",
 }
 CLIS = {"claude": "Claude Code", "codex": "Codex", "cursor": "Cursor", "gemini": "Gemini CLI",
-        "opencode": "OpenCode", "kimi": "Kimi Code"}
+        "opencode": "OpenCode", "kimi": "Kimi Code", "hermes": "Hermes Agent"}
 
 
 def doctor() -> int:

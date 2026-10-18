@@ -39,6 +39,7 @@ SKILL_TARGETS = {
     "gemini": "~/.gemini/skills",
     "opencode": "~/.config/opencode/skills",
     "kimi": "~/.kimi/skills",
+    "hermes": "~/.hermes/skills",   # Hermes Agent scans this tree recursively, flat or by category
 }
 
 # Global instruction files. crossbrain writes a marked block and never touches the rest of the file.
@@ -49,6 +50,7 @@ INSTRUCTION_TARGETS = {
     "codex": "~/.codex/AGENTS.md",
     "gemini": "~/.gemini/GEMINI.md",
     "opencode": "~/.config/opencode/AGENTS.md",
+    "hermes": "~/.hermes/SOUL.md",
 }
 
 # component -> directory holding its installable skill folders, relative to the engine.
